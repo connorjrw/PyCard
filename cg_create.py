@@ -134,7 +134,6 @@ class Stack:
             return self._stack_rules['Suits'][self.top_card().suit]['Default'], False
 
     def validate_value(self, card):
-        print('value', card.value, self._stack_rules['Values'][self.top_card().value])
         if card.value in self._stack_rules['Values'][self.top_card().value]:
             return (self._stack_rules['Values'][self.top_card().value][card.value],
                     self._stack_rules['Values'][self.top_card().value]['Enforced'])
@@ -152,7 +151,6 @@ class Stack:
         else:
             v_suit = self.validate_suit(card)
             v_value = self.validate_value(card)
-            print(v_suit, v_value)
             if v_suit[1] and v_value[1]:  # Both Enforced
                 return v_suit[0] and v_value[0]
             elif v_suit[1] and not v_value[1]:  # Suit is Enforced
@@ -161,34 +159,73 @@ class Stack:
                 return v_value[0]
             elif not v_suit[1] and not v_value[1]:  # Nothing is enforced
                 return v_value[0] or v_suit[0]
-        # if self.top_card() is None:
-        #     return True
-        # else:
-        #     if self._stack_order.index(card.value) > self._stack_order.index(self.top_card().value):
-        #         return True
-        #     else:
-        #         return False
 
 
 class Game:
 
-    def __init__(self, players):
+    def __init__(self, players, stack):
+        self._stack = stack
         self._players = players
         self._player_turn = players[0]
+        self._reversed = False
+        # self._game_rules = game_rules
+        self._actions = {}
+
+    def reverse(self):
+        self._reversed = True
+        self.set_next_player_turn()
 
     def set_player_turn(self, player):
         self._player_turn = player
 
     def set_next_player_turn(self):
-        currentTurn = self._players.index(self._player_turn) + 1
-        if currentTurn == len(self._players):
-            currentTurn = 0
+        if self._reversed:
+            currentTurn = self._players.index(self._player_turn)
+            if currentTurn == 0:
+                currentTurn = len(self._players) - 1
+            else:
+                currentTurn -= 1
+        else:
+            currentTurn = self._players.index(self._player_turn)
+            if currentTurn == len(self._players) - 1:
+                currentTurn = 0
+            else:
+                currentTurn += 1
+
         self._player_turn = self._players[currentTurn]
+
 
     @property
     def player_turn(self):
         return self._player_turn
 
+    def set_card_action(self, card_name, action):
+        self._actions[card_name] = action
+
+    def set_value_action(self, card_name, action):
+        self._actions[card_name] = action
+
+    def set_suit_action(self, card_suit, action):
+        self._actions[card_suit] = action
+
+    def action(self, card):
+        if card.card_name() in self._actions:
+            self._actions[card.card_name()]()
+        elif card.value in self._actions:
+            self._actions[card.value]()
+        elif card.suit in self._actions:
+            self._actions[card.suit]()
+        else:
+            # print('asd')
+            self.set_next_player_turn()
+
+    def skip_turn(self):
+        self.set_next_player_turn()
+        self.set_next_player_turn()
+
+    def move(self, player, card):
+        player.playCard(card, self._stack)
+        self.action(card)
 
 class Deck:
     def __init__(self):

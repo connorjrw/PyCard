@@ -51,7 +51,7 @@ class AllTests(unittest.TestCase):
         self.assertEqual(len(self.player1.hand), 52)
 
     def test_next_player_turn(self):
-        self.game = Game(self.players)
+        self.game = Game(self.players, self.stack)
         self.game.set_player_turn(self.player3)
         self.game.set_next_player_turn()
         self.assertEqual(self.game.player_turn.name(), self.player1.name())
@@ -59,7 +59,6 @@ class AllTests(unittest.TestCase):
     def test_get_card(self):
         self.dealer.deal()
         # self.assertEqual()
-        print(self.player1.get_card('Ace of Diamonds').card_name())
 
     def test_validation(self):
         newplayer = Player('new')
@@ -69,6 +68,25 @@ class AllTests(unittest.TestCase):
         newplayer.playCard(newplayer.hand[0], self.stack)
         newplayer.playCard(newplayer.hand[0], self.stack)
 
+    def test_action(self):
+        self.game = Game(self.players, self.stack)
+        self.player1.set_hand([Card('Hearts', 'Ace'), Card('Spades', 'Three'), Card('Hearts', 'Three'), Card('Hearts', 'King')])
+        self.player2.set_hand([Card('Hearts', 'Eight')])
+        self.game.set_value_action('Eight', self.game.skip_turn)
+        self.game.move(self.player1, self.player1.hand[0])
+        self.game.move(self.player2, self.player2.hand[0])
+        self.assertEqual(self.game.player_turn, self.player1)
+
+    def test_reverse(self):
+        self.game = Game(self.players, self.stack)
+        self.game.set_value_action('Jack', self.game.reverse)
+        self.player1.set_hand([Card('Diamonds', 'Seven'), Card('Diamonds', 'Ten')])
+        self.player2.set_hand([Card('Diamonds', 'Jack')])
+        self.game.move(self.player1, self.player1.hand[0])
+        self.game.move(self.player2, self.player2.hand[0])
+        self.assertEqual(self.game.player_turn, self.player1)
+        self.game.move(self.player1, self.player1.hand[0])
+        self.assertEqual(self.game.player_turn, self.player3)
 
 
 if __name__ == '__main__':
