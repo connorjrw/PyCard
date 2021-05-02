@@ -1,4 +1,4 @@
-from cg_create import *
+from cardlogic import *
 
 status = True
 players = [Player('Connor'), Player('James'), Player('Rae')]

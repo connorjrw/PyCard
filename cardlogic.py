@@ -72,9 +72,12 @@ class Player:
             self._hand.append(card)
 
     def remove_from_hand(self, card):
-        self._hand.remove(card)
+        if card in self._hand:
+            self._hand.remove(card)
+        else:
+            raise CardNotInHandError()
 
-    def handAsStringList(self):
+    def hand_as_string(self):
         cardList = ""
         for card in self._hand:
             cardList = cardList + (card.card_name()) + ', '
@@ -86,9 +89,15 @@ class Player:
             cardList.append(card.card_name())
         return cardList
 
-    def playCard(self, card, stack):
-        stack.addToStack(card)
-        self._hand.remove(card)
+    def get_card_in_hand(self, card_string):  # Untested
+        for card in self._hand:
+            if card.card_name() == card_string:
+                return card
+        raise CardNotInHandError()
+
+    def play_card(self, card, stack):
+        stack.add_to_stack(card)
+        self.remove_from_hand(card)
 
     def get_card(self, card_name):
         return self._hand[self.card_list_string().index(card_name)]
@@ -110,11 +119,19 @@ class Stack:
         self._stack = []
         self._stack_rules = stack_rules
 
-    def addToStack(self, card):
+    def remove_from_stack(self, card_to_remove, player):
+        for index, card in enumerate(self._stack):
+            if card_to_remove == card:
+                del self._stack[index]
+
+    def add_to_stack(self, card):
         if self.validate_move(card):
             self._stack.append(card)
         else:
             raise InvalidCardError()
+
+    def top_card_from_stack(self, player):
+        self._stack.remove(self._stack)
 
     @property
     def stack(self):
@@ -127,6 +144,7 @@ class Stack:
             return self._stack[len(self._stack) - 1]
 
     def validate_suit(self, card):
+
         if card.suit in self._stack_rules['Suits'][self.top_card().suit]:
             return (self._stack_rules['Suits'][self.top_card().suit][card.suit],
                     self._stack_rules['Suits'][self.top_card().suit]['Enforced'])
@@ -142,7 +160,9 @@ class Stack:
                     self._stack_rules['Values'][self.top_card().value]['Enforced'])
 
     def validate_move(self, card):
-        if self.top_card() is None:
+        if self._stack_rules is None:
+            return True
+        elif self.top_card() is None:
             if card.suit in self._stack_rules['None']:
                 # Further validation
                 suit = self._stack_rules['None'][card.suit]
@@ -168,11 +188,10 @@ class Game:
         self._players = players
         self._player_turn = players[0]
         self._reversed = False
-        # self._game_rules = game_rules
         self._actions = {}
 
     def reverse(self):
-        self._reversed = True
+        self._reversed = not self._reversed
         self.set_next_player_turn()
 
     def set_player_turn(self, player):
@@ -193,7 +212,6 @@ class Game:
                 currentTurn += 1
 
         self._player_turn = self._players[currentTurn]
-
 
     @property
     def player_turn(self):
@@ -216,7 +234,6 @@ class Game:
         elif card.suit in self._actions:
             self._actions[card.suit]()
         else:
-            # print('asd')
             self.set_next_player_turn()
 
     def skip_turn(self):
@@ -224,8 +241,18 @@ class Game:
         self.set_next_player_turn()
 
     def move(self, player, card):
-        player.playCard(card, self._stack)
-        self.action(card)
+        if player == self._player_turn:
+            player.play_card(card, self._stack)
+            self.action(card)
+        else:
+            raise InvalidTurnError
+
+    def pass_turn(self, player):
+        if player == self._player_turn:
+            self.set_next_player_turn()
+        else:
+            raise InvalidTurnError
+
 
 class Deck:
     def __init__(self):
