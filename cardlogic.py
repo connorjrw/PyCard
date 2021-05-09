@@ -1,4 +1,5 @@
 import random
+import pygame
 from _ast import Raise
 
 from errors import *
@@ -8,9 +9,33 @@ class Card:
     def __init__(self, suit, value):
         self._suit = suit
         self._value = value
+        self._rect = pygame.Rect(0, 0, 0, 0)
+        self._image = 'images/Cards/' + suit + value + '.png'
+        self._is_moved = False
+        self._position = [-1, -1]
+        self._previous_position = []
+
+    def set_previous_position(self, position):
+        self._previous_position = position
+
+    def get_previous_position(self):
+        return self._previous_position
 
     def card_name(self):
         return self._value + ' of ' + self._suit
+
+    def is_moved(self):
+        return self._is_moved
+
+    def set_moved(self, position):
+        self._is_moved = True
+
+    def get_position(self):
+        return self._position
+
+    def set_position(self, position):
+        self._position = position
+        self.set_card_rect([position[0], position[1], 84, 114])
 
     @property
     def suit(self):
@@ -28,6 +53,17 @@ class Card:
     def value(self, value):
         self._value = value
 
+    def display_card(self, display, location):
+        card_img = pygame.image.load(self._image)
+        card_img = pygame.transform.scale(card_img, (84, 114))
+        display.blit(card_img, ([location[0], location[1]]))
+
+    def set_card_rect(self, position):
+        self._rect = pygame.Rect(position[0], position[1], position[2], position[3])
+
+    def get_card_rect(self):
+        return self._rect
+
 
 class Dealer:
     def __init__(self, deck, players):
@@ -41,7 +77,7 @@ class Dealer:
         ttl_players = len(self._players)
         if card_count != 52:
             card_count = card_count * len(self._players)
-        for card in self._deck.deck[:card_count]:
+        for card in self._deck.deck()[:card_count]:
             self._players[cp_index].add_to_hand(card)
             cp_index += 1
             self._deck.remove_card(card)
@@ -60,12 +96,15 @@ class Dealer:
 
 
 class Player:
-    def __init__(self, name):
+    def __init__(self, name, location):
         self._name = name
         self._hand = []
+        self._x = location[0]
+        self._y = location[1]
 
     def add_to_hand(self, card):
         self._hand.append(card)
+        self.set_hand_positions()
 
     def add_multiple_to_hand(self, cards):
         for card in cards:
@@ -74,6 +113,7 @@ class Player:
     def remove_from_hand(self, card):
         if card in self._hand:
             self._hand.remove(card)
+            self.set_hand_positions()
         else:
             raise CardNotInHandError()
 
@@ -112,12 +152,47 @@ class Player:
     def name(self):
         return self._name
 
+    def get_rect(self):
+        return pygame.Rect(self._x, self._y, 20*len(self._hand) + 64, 114)
+
+    def display_hand(self, display):
+        for index, card in enumerate(self._hand):
+            # print(card.get_position(), 'posit')
+            card.display_card(display, card.get_position())
+
+    def set_hand_positions(self):
+        x = self._x
+        y = self._y + 30
+        for index, card in enumerate(self._hand):
+            if index == len(self._hand) - 1:
+                card.set_card_rect([x, y, 84, 114])
+                card.set_position([x, y])
+            else:
+                card.set_position([x, y])
+                card.set_card_rect([x, y, 20, 114])
+            x += 20
+
+    def display_player(self, display, font):
+        text = font.render(self._name, False, (0, 0, 0))
+        display.blit(text, (self._x, self._y))
+
 
 class Stack:
-    def __init__(self, stack_rules=None):
+    def __init__(self, position, stack_rules=None):
         self._active = False
         self._stack = []
         self._stack_rules = stack_rules
+        self._size = [84, 114]
+        self._position = position
+
+    def get_position(self):
+        return self._position
+
+    def get_stack_rect(self):
+        return pygame.Rect(self._position[0], self._position[1], self._size[0], self._size[1])
+
+    def display_stack(self, display):
+        self._stack[len(self._stack) - 1].display_card(display, self._position)
 
     def remove_from_stack(self, card_to_remove, player):
         for index, card in enumerate(self._stack):
@@ -183,12 +258,25 @@ class Stack:
 
 class Game:
 
-    def __init__(self, players, stack):
+    def __init__(self, players, stack, deck):
         self._stack = stack
+        self._deck = deck
         self._players = players
         self._player_turn = players[0]
+        self._screen = pygame.display.set_mode([800, 550])
         self._reversed = False
         self._actions = {}
+        self._font = pygame.font.SysFont('Helvetica', 20)
+
+    def generate(self):
+        self._screen.fill((0, 128, 0))
+        self._deck.display_deck(self._screen)
+        # self._deck.display_top_card(self._screen)
+        self._stack.display_stack(self._screen)
+        for player in self._players:
+            player.display_hand(self._screen)
+            player.display_player(self._screen, self._font)
+        pygame.display.flip()
 
     def reverse(self):
         self._reversed = not self._reversed
@@ -255,8 +343,20 @@ class Game:
 
 
 class Deck:
-    def __init__(self):
+    def __init__(self, location):
         self._deck = self.create()
+        self._back_image = 'images/card-back.png'
+        self._back_image = pygame.image.load(self._back_image)
+        self._back_image = pygame.transform.scale(self._back_image, (84, 114))
+        self._x = location[0]
+        self._y = location[1]
+        self._rect = pygame.Rect(location[0] + 90, location[1], 84, 114)
+
+    def get_rect(self):
+        return self._rect
+
+    def get_position(self):
+        return [self._x + 90, self._y]
 
     def create(self):
         suits = ['Diamonds', 'Hearts', 'Clubs', 'Spades']
@@ -279,9 +379,22 @@ class Deck:
             if card in cards_to_remove:
                 self._deck.remove(card)
 
+    def draw_to_stack(self, stack):
+        top_card = self._deck[len(self._deck) - 1]
+        stack.add_to_stack(top_card)
+        self.remove_card(top_card)
+
     def shuffle(self):
         random.shuffle(self._deck)
 
-    @property
+    def get_top_card(self):
+        return self._deck[len(self._deck) - 1]
+
+    def display_deck(self, display):
+        display.blit(self._back_image, (self._x, self._y))
+
+    def display_top_card(self, display):
+        self.get_top_card().display_card(display, [self._x + 90, self._y])
+
     def deck(self):
         return self._deck
