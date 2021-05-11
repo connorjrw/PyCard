@@ -149,6 +149,7 @@ class Player:
     def hand(self):
         return self._hand
 
+    @property
     def name(self):
         return self._name
 
@@ -267,10 +268,12 @@ class Game:
         self._reversed = False
         self._actions = {}
         self._font = pygame.font.SysFont('Helvetica', 20)
+        self._player_turn_iden = [305, 315] # Add as paramater
 
     def generate(self):
         self._screen.fill((0, 128, 0))
         self._deck.display_deck(self._screen)
+        self.show_player_turn(self._screen, self._font)
         # self._deck.display_top_card(self._screen)
         self._stack.display_stack(self._screen)
         for player in self._players:
@@ -334,6 +337,10 @@ class Game:
             self.action(card)
         else:
             raise InvalidTurnError
+
+    def show_player_turn(self, display, font):
+        text = font.render(self._player_turn.name + "'s turn", False, (0, 0, 0))
+        display.blit(text, (self._player_turn_iden[0], self._player_turn_iden[1]))
 
     def pass_turn(self, player):
         if player == self._player_turn:

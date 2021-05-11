@@ -22,7 +22,11 @@ game = Game([player1, player2], stack, deck)
 
 # Run until the user asks to quit
 running = True
-movingcard = [None, False]
+current_card = None
+is_moving = False
+
+x_buf = 0
+y_buf = 0
 while running:
 
     # Did the user click the window close button?
@@ -32,29 +36,32 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             for player in [player1, player2]:
                 for card in player.hand:
-                    if card.get_card_rect().collidepoint(pygame.mouse.get_pos()):
-                        movingcard[0] = card
-                        movingcard[1] = True
-                        movingcard[0].set_previous_position(movingcard[0].get_position())
+                    if card.get_card_rect().collidepoint(pygame.mouse.get_pos()) and game.player_turn == player:
+                        current_card = card
+                        is_moving = True
+                        current_card.set_previous_position(current_card.get_position())
 
-        if movingcard[1]:
+                        # Get difference between cursor and top of card
+                        x_buf = pygame.mouse.get_pos()[0] - current_card.get_position()[0]
+                        y_buf = pygame.mouse.get_pos()[1] - current_card.get_position()[1]
+
+        if is_moving:
+            # Card follows cursor while moving
+
+            x = pygame.mouse.get_pos()[0] - x_buf
+            y = pygame.mouse.get_pos()[1] - y_buf
+
+            current_card.set_position([x, y])
+            current_card.set_card_rect([x + x_buf, y + y_buf, 84, 114])
+
+        if event.type == pygame.MOUSEBUTTONUP and is_moving:
             x = pygame.mouse.get_pos()[0]
             y = pygame.mouse.get_pos()[1]
-            movingcard[0].set_position([x, y])
-            movingcard[0].set_card_rect([x, y, 84, 114])
-
-        if event.type == pygame.MOUSEBUTTONUP and movingcard[1]:
-            x = pygame.mouse.get_pos()[0]
-            y = pygame.mouse.get_pos()[1]
-            if stack.get_stack_rect().colliderect(movingcard[0].get_card_rect()):
-                # movingcard[0].set_position([])
-                # movingcard[0].set_card_rect(stack.get_stack_rect())
-                game.move(game.player_turn, movingcard[0])
-                # game.player_turn.set_hand_positions()
-                # stack.add_to_stack(movingcard[0])
+            if stack.get_stack_rect().colliderect(current_card.get_card_rect()):
+                game.move(game.player_turn, current_card)
             else:
-                movingcard[0].set_position(movingcard[0].get_previous_position())
-            movingcard[1] = False
+                current_card.set_position(current_card.get_previous_position())
+            is_moving = False
 
     game.generate()
 
