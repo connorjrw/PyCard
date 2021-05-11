@@ -96,9 +96,14 @@ class Dealer:
 
 
 class Player:
-    def __init__(self, name, location):
+    def __init__(self, name):
         self._name = name
         self._hand = []
+        self._x = 0
+        self._y = 0
+
+    def set_location(self, location):
+        print('setting location', location)
         self._x = location[0]
         self._y = location[1]
 
@@ -264,11 +269,29 @@ class Game:
         self._deck = deck
         self._players = players
         self._player_turn = players[0]
+        self.set_player_location()
         self._screen = pygame.display.set_mode([800, 550])
         self._reversed = False
         self._actions = {}
         self._font = pygame.font.SysFont('Helvetica', 20)
         self._player_turn_iden = [305, 315] # Add as paramater
+
+
+    def set_player_location(self):
+        if len(self._players) == 1:
+            self._players[0].set_location([10,10])
+        elif len(self._players) == 2:
+            self._players[0].set_location([10, 10])
+            self._players[1].set_location([490, 370])
+        elif len(self._players) == 3:
+            self._players[0].set_location([10, 10])
+            self._players[1].set_location([490, 370])
+            self._players[2].set_location([10, 370])
+        elif len(self._players) == 4:
+            self._players[0].set_location([10, 10])
+            self._players[1].set_location([490, 10])
+            self._players[2].set_location([490, 370])
+            self._players[3].set_location([10, 370])
 
     def generate(self):
         self._screen.fill((0, 128, 0))

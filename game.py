@@ -4,10 +4,13 @@ pygame.init()
 deck = Deck([300, 193])
 stack = Stack([390, 193])
 deck.shuffle()
-player1 = Player('connor', [10, 10])
-player2 = Player('Minh', [490, 370])
-dealer = Dealer(deck, [player1, player2])
-dealer.deal(10)
+player1 = Player('Connor')
+player2 = Player('Minh')
+player3 = Player('Mori')
+player4 = Player('Moto')
+players = [player1, player2, player3, player4]
+dealer = Dealer(deck, players)
+
 
 pygame.font.init()
 myfont = pygame.font.SysFont('Helvetica', 20)
@@ -16,8 +19,11 @@ screen = pygame.display.set_mode([800, 550])
 deck_image = pygame.image.load(r'images/card-back.png')
 deck_image = pygame.transform.scale(deck_image, (84, 114))
 
+
+game = Game(players, stack, deck)
+
+dealer.deal(10)
 deck.draw_to_stack(stack)
-game = Game([player1, player2], stack, deck)
 
 
 # Run until the user asks to quit
@@ -34,7 +40,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
-            for player in [player1, player2]:
+            for player in players:
                 for card in player.hand:
                     if card.get_card_rect().collidepoint(pygame.mouse.get_pos()) and game.player_turn == player:
                         current_card = card
