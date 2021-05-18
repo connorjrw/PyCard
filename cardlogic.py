@@ -103,7 +103,6 @@ class Player:
         self._y = 0
 
     def set_location(self, location):
-        print('setting location', location)
         self._x = location[0]
         self._y = location[1]
 
@@ -381,6 +380,8 @@ class Deck:
         self._x = location[0]
         self._y = location[1]
         self._rect = pygame.Rect(location[0] + 90, location[1], 84, 114)
+        deck_image = pygame.image.load(r'./images/card-back.png')
+        deck_image = pygame.transform.scale(deck_image, (84, 114))
 
     def get_rect(self):
         return self._rect

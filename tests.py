@@ -1,6 +1,6 @@
 import unittest
 from cardlogic import *
-from rules import *
+from last_card.lc_rules import *
 from errors import *
 
 

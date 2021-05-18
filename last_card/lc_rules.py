@@ -15,6 +15,7 @@ rules = {
         },
         "Diamonds": {
             'Default': False,
+            'Diamonds': True,
             'Enforced': False
         },
         "Hearts": {
@@ -27,7 +28,7 @@ rules = {
         "Ace": {
             'Default': False,
             'Ace': True,
-            'Enforced': True
+            'Enforced': False
         },
         "Two": {
             'Default': False,

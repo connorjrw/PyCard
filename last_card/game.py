@@ -1,27 +1,38 @@
 import pygame
+from last_card import lc_rules
 from cardlogic import *
+
+
 pygame.init()
+
 deck = Deck([300, 193])
-stack = Stack([390, 193])
+stack = Stack([390, 193], lc_rules.rules)
+
 deck.shuffle()
+
+# Players
 player1 = Player('Connor')
 player2 = Player('Minh')
 player3 = Player('Mori')
 player4 = Player('Moto')
 players = [player1, player2, player3, player4]
+
+# dealer
 dealer = Dealer(deck, players)
 
-
+#font
 pygame.font.init()
 myfont = pygame.font.SysFont('Helvetica', 20)
+
+
 # Set up the drawing window
 screen = pygame.display.set_mode([800, 550])
-deck_image = pygame.image.load(r'images/card-back.png')
-deck_image = pygame.transform.scale(deck_image, (84, 114))
 
 
+# game init
 game = Game(players, stack, deck)
-
+game.set_value_action('Eight', game.skip_turn)
+game.set_value_action('Jack', game.reverse)
 dealer.deal(10)
 deck.draw_to_stack(stack)
 
@@ -34,8 +45,6 @@ is_moving = False
 x_buf = 0
 y_buf = 0
 while running:
-
-    # Did the user click the window close button?
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -52,7 +61,7 @@ while running:
                         y_buf = pygame.mouse.get_pos()[1] - current_card.get_position()[1]
 
         if is_moving:
-            # Card follows cursor while moving
+            # Drag card
 
             x = pygame.mouse.get_pos()[0] - x_buf
             y = pygame.mouse.get_pos()[1] - y_buf
@@ -61,15 +70,19 @@ while running:
             current_card.set_card_rect([x + x_buf, y + y_buf, 84, 114])
 
         if event.type == pygame.MOUSEBUTTONUP and is_moving:
+            # Stop dragging card
             x = pygame.mouse.get_pos()[0]
             y = pygame.mouse.get_pos()[1]
             if stack.get_stack_rect().colliderect(current_card.get_card_rect()):
-                game.move(game.player_turn, current_card)
+                try:
+                    game.move(game.player_turn, current_card)
+                except InvalidCardError:
+                    # Also error
+                    current_card.set_position(current_card.get_previous_position())
             else:
                 current_card.set_position(current_card.get_previous_position())
             is_moving = False
 
     game.generate()
 
-# Done! Time to quit.
 pygame.quit()
