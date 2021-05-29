@@ -85,9 +85,10 @@ class Dealer:
                 cp_index = 0
 
     def deal_to_player(self, player, cards):
-        if cards > len(self._deck.deck):  # if nothing left to deal, deal the rest of the pack
-            cards = len(self._deck.deck)
-        dealt_cards = self._deck.deck[:cards]
+        print('player', player)
+        if cards > len(self._deck.deck()):  # if nothing left to deal, deal the rest of the pack
+            cards = len(self._deck.deck())
+        dealt_cards = self._deck.deck()[:cards]
         player.add_multiple_to_hand(dealt_cards)
         self._deck.remove_multiple_cards(dealt_cards)
 
@@ -106,6 +107,9 @@ class Player:
         self._x = location[0]
         self._y = location[1]
 
+    def get_location(self):
+        return [self._x, self._y]
+
     def add_to_hand(self, card):
         self._hand.append(card)
         self.set_hand_positions()
@@ -113,6 +117,7 @@ class Player:
     def add_multiple_to_hand(self, cards):
         for card in cards:
             self._hand.append(card)
+        self.set_hand_positions()
 
     def remove_from_hand(self, card):
         if card in self._hand:
@@ -261,20 +266,75 @@ class Stack:
                 return v_value[0] or v_suit[0]
 
 
+class TurnOptionButton:
+    def __init__(self, name, action):
+        self._name = name
+        self._action = action
+        self._x = 0
+        self._y = 0
+        self._rect = pygame.Rect(0, 0, 0, 0)
+
+    def set_rect(self, dimen):
+        self._rect = pygame.Rect(dimen[0], dimen[1], dimen[2], dimen[3])
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def rect(self):
+        return self._rect
+
+    @property
+    def action(self):
+        return self._action
+
 class Game:
 
-    def __init__(self, players, stack, deck):
+    def __init__(self, players, stack, deck, dealer):
         self._stack = stack
         self._deck = deck
         self._players = players
         self._player_turn = players[0]
+        self._dealer = dealer
+        self._turn_options = []
         self.set_player_location()
         self._screen = pygame.display.set_mode([800, 550])
         self._reversed = False
         self._actions = {}
-        self._font = pygame.font.SysFont('Helvetica', 20)
+        self._font = pygame.font.SysFont('timesnewromanbold', 20)
         self._player_turn_iden = [305, 315] # Add as paramater
 
+    @property
+    def turn_options(self):
+        return self._turn_options
+
+    def remove_turn_option(self, name):
+        for turn in self._turn_options:
+            if turn.name == name:
+                self._turn_options.remove(turn)
+
+    def add_turn_option(self, name, action):
+        exists = False
+        for turn_option in self._turn_options:
+            print(turn_option.name)
+            if turn_option.name == name:
+                exists = True
+        if not exists:
+            self._turn_options.append(TurnOptionButton(name, action))
+
+    def show_turn_options(self, display, font):
+        font = pygame.font.SysFont('timesnewromanbold', 16)
+        color = (220, 220, 220)
+        loc = self._player_turn.get_location()
+        x = loc[0]
+        y = loc[1] + 150
+        for turn in self._turn_options:
+            turn.set_rect(pygame.Rect(x, y, 70, 25))
+            pygame.draw.rect(display, color, pygame.Rect(x, y, 70, 25))
+            text = font.render(turn.name, False, (0, 0, 0))
+            display.blit(text, (x + 10, y))
+            x += 75
 
     def set_player_location(self):
         if len(self._players) == 1:
@@ -296,6 +356,7 @@ class Game:
         self._screen.fill((0, 128, 0))
         self._deck.display_deck(self._screen)
         self.show_player_turn(self._screen, self._font)
+        self.show_turn_options(self._screen, self._font)
         # self._deck.display_top_card(self._screen)
         self._stack.display_stack(self._screen)
         for player in self._players:
@@ -369,6 +430,22 @@ class Game:
             self.set_next_player_turn()
         else:
             raise InvalidTurnError
+
+    def deal_and_next_turn(self):
+        self._dealer.deal_to_player(self._player_turn, 1)
+        self.set_next_player_turn()
+
+    def draw_two_action(self):
+        self._dealer.deal_to_player(self._player_turn, 2)
+        self.remove_turn_option('Draw Two')
+        self.add_turn_option('Draw', self.deal_and_next_turn)
+        self.set_next_player_turn()
+
+    def draw_two(self):
+        self.set_next_player_turn()
+        self.remove_turn_option('Draw')
+        self.add_turn_option('Draw Two', self.draw_two_action)
+        # self._turn_options.append(TurnOptionButton('Draw Two', self.draw_two_action))
 
 
 class Deck:

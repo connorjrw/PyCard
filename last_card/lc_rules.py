@@ -32,8 +32,8 @@ rules = {
         },
         "Two": {
             'Default': False,
-            'Two': False,
-            'Enforced': False
+            'Two': True,
+            'Enforced': True
         },
         "Three": {
             'Default': False,

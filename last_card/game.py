@@ -8,8 +8,9 @@ pygame.init()
 deck = Deck([300, 193])
 stack = Stack([390, 193], lc_rules.rules)
 
-deck.shuffle()
 
+deck.shuffle()
+print(pygame.font.get_fonts())
 # Players
 player1 = Player('Connor')
 player2 = Player('Minh')
@@ -30,9 +31,14 @@ screen = pygame.display.set_mode([800, 550])
 
 
 # game init
-game = Game(players, stack, deck)
+game = Game(players, stack, deck, dealer)
 game.set_value_action('Eight', game.skip_turn)
 game.set_value_action('Jack', game.reverse)
+game.set_value_action('Two', game.draw_two)
+# game.add_turn_option('Done', game.set_next_player_turn)
+game.add_turn_option('Draw', game.deal_and_next_turn)
+
+
 dealer.deal(10)
 deck.draw_to_stack(stack)
 
@@ -59,7 +65,9 @@ while running:
                         # Get difference between cursor and top of card
                         x_buf = pygame.mouse.get_pos()[0] - current_card.get_position()[0]
                         y_buf = pygame.mouse.get_pos()[1] - current_card.get_position()[1]
-
+            for button in game.turn_options:
+                if button.rect.collidepoint(pygame.mouse.get_pos()):
+                    button.action()
         if is_moving:
             # Drag card
 
