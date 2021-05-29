@@ -5,22 +5,18 @@ rules = {
     "Suits": {
         "Spades": {
             'Default': False,
-            'Spades': True,
             'Enforced': False
         },
         "Clubs": {
             'Default': False,
-            'Clubs': True,
             'Enforced': False
         },
         "Diamonds": {
             'Default': False,
-            'Diamonds': True,
             'Enforced': False
         },
         "Hearts": {
             'Default': False,
-            'Hearts': True,
             'Enforced': False
         },
     },
@@ -28,7 +24,7 @@ rules = {
         "Ace": {
             'Default': False,
             'Ace': True,
-            'Enforced': False
+            'Enforced': True
         },
         "Two": {
             'Default': False,
@@ -38,12 +34,12 @@ rules = {
         "Three": {
             'Default': False,
             'Three': True,
-            'Enforced': False
+            'Enforced': True
         },
         "Four": {
             'Default': False,
             'Four': True,
-            'Enforced': False
+            'Enforced': True
         },
         "Five": {
             'Default': False,
@@ -53,42 +49,42 @@ rules = {
         "Six": {
             'Default': False,
             'Six': True,
-            'Enforced': False
+            'Enforced': True
         },
         'Seven': {
             'Default': False,
             'Seven': True,
-            'Enforced': False
+            'Enforced': True
         },
         'Eight': {
             'Default': False,
             'Eight': True,
-            'Enforced': False
+            'Enforced': True
         },
         'Nine': {
             'Default': False,
             'Nine': True,
-            'Enforced': False
+            'Enforced': True
         },
         'Ten': {
             'Default': False,
             'Ten': True,
-            'Enforced': False
+            'Enforced': True
         },
         'Jack': {
             'Default': False,
             'Jack': True,
-            'Enforced': False
+            'Enforced': True
         },
         'Queen': {
             'Default': False,
             'Queen': True,
-            'Enforced': False
+            'Enforced': True
         },
         'King': {
             'Default': False,
             'King': True,
-            'Enforced': False
+            'Enforced': True
         },
     }
 

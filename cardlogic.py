@@ -85,7 +85,6 @@ class Dealer:
                 cp_index = 0
 
     def deal_to_player(self, player, cards):
-        print('player', player)
         if cards > len(self._deck.deck()):  # if nothing left to deal, deal the rest of the pack
             cards = len(self._deck.deck())
         dealt_cards = self._deck.deck()[:cards]
@@ -115,6 +114,7 @@ class Player:
         self.set_hand_positions()
 
     def add_multiple_to_hand(self, cards):
+        print('asdf')
         for card in cards:
             self._hand.append(card)
         self.set_hand_positions()
@@ -194,6 +194,20 @@ class Stack:
         self._stack_rules = stack_rules
         self._size = [84, 114]
         self._position = position
+
+    def update_rules(self, rules):
+        self._stack_rules = rules
+
+    def update_rule(self, update):
+        if "Suits" in update:
+            for suit in self._stack_rules['Suits']:
+                if suit in update["Suits"]:
+                    self._stack_rules['Suits'][suit] = update["Suits"][suit]
+        if "Values" in update:
+            for value in self._stack_rules['Values']:
+                if value in update["Values"]:
+                    self._stack_rules['Values'][value] = update["Values"][value]
+        print(self._stack_rules, 'rules')
 
     def get_position(self):
         return self._position
@@ -289,6 +303,7 @@ class TurnOptionButton:
     def action(self):
         return self._action
 
+
 class Game:
 
     def __init__(self, players, stack, deck, dealer):
@@ -317,7 +332,7 @@ class Game:
     def add_turn_option(self, name, action):
         exists = False
         for turn_option in self._turn_options:
-            print(turn_option.name)
+            print(turn_option.name, name)
             if turn_option.name == name:
                 exists = True
         if not exists:
@@ -400,7 +415,8 @@ class Game:
     def set_suit_action(self, card_suit, action):
         self._actions[card_suit] = action
 
-    def action(self, card):
+    def action(self):
+        card = self._stack.top_card()
         if card.card_name() in self._actions:
             self._actions[card.card_name()]()
         elif card.value in self._actions:
@@ -414,10 +430,10 @@ class Game:
         self.set_next_player_turn()
         self.set_next_player_turn()
 
-    def move(self, player, card):
+    def play_card(self, player, card):
         if player == self._player_turn:
             player.play_card(card, self._stack)
-            self.action(card)
+            # self.action()
         else:
             raise InvalidTurnError
 
@@ -432,20 +448,9 @@ class Game:
             raise InvalidTurnError
 
     def deal_and_next_turn(self):
+        print('hello?')
         self._dealer.deal_to_player(self._player_turn, 1)
         self.set_next_player_turn()
-
-    def draw_two_action(self):
-        self._dealer.deal_to_player(self._player_turn, 2)
-        self.remove_turn_option('Draw Two')
-        self.add_turn_option('Draw', self.deal_and_next_turn)
-        self.set_next_player_turn()
-
-    def draw_two(self):
-        self.set_next_player_turn()
-        self.remove_turn_option('Draw')
-        self.add_turn_option('Draw Two', self.draw_two_action)
-        # self._turn_options.append(TurnOptionButton('Draw Two', self.draw_two_action))
 
 
 class Deck:
