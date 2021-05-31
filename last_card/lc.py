@@ -1,6 +1,9 @@
 import pygame
 from last_card import lc_rules, lc_rules2
-from cardlogic import *
+from game import *
+from deck import *
+from player import *
+from dealer import *
 
 
 class LastCard(Game):
@@ -83,6 +86,10 @@ lc.set_value_action('Jack', lc.reverse)
 lc.set_value_action('Two', lc.draw_two)
 lc.set_value_action('Five', lc.draw_five)
 lc.add_turn_option('Draw', lc.deal_and_next_turn)
+
+#
+stack.update_rule({"Values": {"Two": {'Default': False, 'Two': True, 'Enforced': False}}})
+stack.update_rule({"Values": {"Five": {'Default': False, 'Five': True, 'Enforced': False}}})
 
 
 dealer.deal(10)
