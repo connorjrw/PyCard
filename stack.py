@@ -11,6 +11,7 @@ class Stack:
         self._position = position
 
     def update_rules(self, rules):
+        print('updating rules')
         self._stack_rules = rules
 
     def update_rule(self, update):
@@ -22,6 +23,9 @@ class Stack:
             for value in self._stack_rules['Values']:
                 if value in update["Values"]:
                     self._stack_rules['Values'][value] = update["Values"][value]
+
+    def get_rules(self):
+        return self._stack_rules
 
     def get_position(self):
         return self._position

@@ -11,12 +11,57 @@ class Game:
         self._player_turn = players[0]
         self._dealer = dealer
         self._turn_options = []
+        self._current_card = None
+        self._x_buf = 0
+        self._y_buf = 0
         self.set_player_location()
         self._screen = pygame.display.set_mode([800, 550])
         self._reversed = False
         self._actions = {}
         self._font = pygame.font.SysFont('timesnewromanbold', 20)
         self._player_turn_iden = [305, 315] # Add as paramater
+
+    def handle_event(self, event):
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            print('asd')
+            for player in self._players:
+                for card in player.hand:
+                    if card.get_card_rect().collidepoint(pygame.mouse.get_pos()) and self._player_turn == player:
+                        self._current_card = card
+                        self._current_card.set_moving(True)
+                        self._current_card.set_previous_position(self._current_card.get_position())
+
+                        # Get difference between cursor and top of card
+                        self._x_buf = pygame.mouse.get_pos()[0] - self._current_card.get_position()[0]
+                        self._y_buf = pygame.mouse.get_pos()[1] - self._current_card.get_position()[1]
+            for button in self._turn_options:
+                if button.rect.collidepoint(pygame.mouse.get_pos()):
+                    button.action()
+
+        if self._current_card:
+            if self._current_card.is_moving:
+                # Drag card
+                x = pygame.mouse.get_pos()[0] - self._x_buf
+                y = pygame.mouse.get_pos()[1] - self._y_buf
+
+                self._current_card.set_position([x, y])
+                self._current_card.set_card_rect([x + self._x_buf, y + self._y_buf, 84, 114])
+
+            if event.type == pygame.MOUSEBUTTONUP and self._current_card.is_moving:
+            # Stop dragging card
+                x = pygame.mouse.get_pos()[0]
+                y = pygame.mouse.get_pos()[1]
+                if self._stack.get_stack_rect().colliderect(self._current_card.get_card_rect()):
+                    try:
+                        self.play_card(self._player_turn, self._current_card)
+                    except InvalidCardError:
+                        # Also error
+                        self._current_card.set_position(self._current_card.get_previous_position())
+                else:
+                    self._current_card.set_position(self._current_card.get_previous_position())
+                self._current_card.set_moving(False)
 
     @property
     def turn_options(self):
@@ -80,6 +125,11 @@ class Game:
         for player in self._players:
             player.display_hand(self._screen)
             player.display_player(self._screen, self._font)
+
+            # if player == self._player_turn:
+            #     player.display_hand(self._screen)
+            # else:  # Hide cards if not the players turn
+            #     player.display_hand_facedown(self._screen)
         pygame.display.flip()
 
     def reverse(self):

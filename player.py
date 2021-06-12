@@ -75,6 +75,10 @@ class Player:
             # print(card.get_position(), 'posit')
             card.display_card(display, card.get_position())
 
+    def display_hand_facedown(self, display):
+        for index, card in enumerate(self._hand):
+            card.display_card_facedown(display, card.get_position())
+
     def set_hand_positions(self):
         x = self._x
         y = self._y + 30
