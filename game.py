@@ -66,6 +66,11 @@ class Game:
             self._players[3].set_location([10, 370])
 
     def generate(self):
+        # If the deck is empty, move all but top card from stack back to deck
+        if len(self._deck.deck()) == 0 and len(self._stack.stack) > 1:
+            self._deck.set_deck(self._stack.stack[:-1])
+            self._stack.set_stack([self._stack.stack[len(self._stack.stack) - 1]])
+            self._deck.shuffle()
         self._screen.fill((0, 128, 0))
         self._deck.display_deck(self._screen)
         self.show_player_turn(self._screen, self._font)
@@ -146,6 +151,5 @@ class Game:
             raise InvalidTurnError
 
     def deal_and_next_turn(self):
-        print('hello?')
         self._dealer.deal_to_player(self._player_turn, 1)
         self.set_next_player_turn()

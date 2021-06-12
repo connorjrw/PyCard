@@ -92,7 +92,7 @@ stack.update_rule({"Values": {"Two": {'Default': False, 'Two': True, 'Enforced':
 stack.update_rule({"Values": {"Five": {'Default': False, 'Five': True, 'Enforced': False}}})
 
 
-dealer.deal(10)
+dealer.deal(12)
 deck.draw_to_stack(stack)
 
 

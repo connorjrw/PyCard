@@ -21,6 +21,9 @@ class Deck:
     def get_position(self):
         return [self._x + 90, self._y]
 
+    def set_deck(self, deck):
+        self._deck = deck
+
     def create(self):
         suits = ['Diamonds', 'Hearts', 'Clubs', 'Spades']
         values = ['Ace', 'Two', 'Three', 'Four', 'Five', 'Six',
@@ -54,7 +57,8 @@ class Deck:
         return self._deck[len(self._deck) - 1]
 
     def display_deck(self, display):
-        display.blit(self._back_image, (self._x, self._y))
+        if len(self._deck) > 0: # Show nothing if deck is empty,
+            display.blit(self._back_image, (self._x, self._y))
 
     def display_top_card(self, display):
         self.get_top_card().display_card(display, [self._x + 90, self._y])

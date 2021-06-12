@@ -22,10 +22,12 @@ class Stack:
             for value in self._stack_rules['Values']:
                 if value in update["Values"]:
                     self._stack_rules['Values'][value] = update["Values"][value]
-        print(self._stack_rules, 'rules')
 
     def get_position(self):
         return self._position
+
+    def set_stack(self, stack):
+        self._stack = stack
 
     def get_stack_rect(self):
         return pygame.Rect(self._position[0], self._position[1], self._size[0], self._size[1])

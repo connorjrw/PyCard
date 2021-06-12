@@ -20,7 +20,6 @@ class Player:
         self.set_hand_positions()
 
     def add_multiple_to_hand(self, cards):
-        print('asdf')
         for card in cards:
             self._hand.append(card)
         self.set_hand_positions()
