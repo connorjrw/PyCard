@@ -21,16 +21,19 @@ class Game:
         self._font = pygame.font.SysFont('timesnewromanbold', 20)
         self._player_turn_iden = [305, 315] # Add as paramater
         self._running = True
+        self._winner = None
 
     @property
     def running(self):
         return self._running
 
+    def winner(self):
+        return self._winner
+
     def handle_event(self, event):
         if event.type == pygame.QUIT:
-            running = False
+            self._running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
-            print('asd')
             for player in self._players:
                 for card in player.hand:
                     if card.get_card_rect().collidepoint(pygame.mouse.get_pos()) and self._player_turn == player:
@@ -83,7 +86,6 @@ class Game:
     def add_turn_option(self, name, action):
         exists = False
         for turn_option in self._turn_options:
-            print(turn_option.name, name)
             if turn_option.name == name:
                 exists = True
         if not exists:
@@ -120,25 +122,32 @@ class Game:
 
     def generate(self):
         # If the deck is empty, move all but top card from stack back to deck
-        if len(self._deck.deck()) == 0 and len(self._stack.stack) > 1:
-            self._deck.set_deck(self._stack.stack[:-1])
-            self._stack.set_stack([self._stack.stack[len(self._stack.stack) - 1]])
-            self._deck.shuffle()
-        self._screen.fill((0, 128, 0))
-        self._deck.display_deck(self._screen)
-        self.show_player_turn(self._screen, self._font)
-        self.show_turn_options(self._screen, self._font)
-        # self._deck.display_top_card(self._screen)
-        self._stack.display_stack(self._screen)
-        for player in self._players:
-            player.display_hand(self._screen)
-            player.display_player(self._screen, self._font)
+        if self._winner is None:
+            if len(self._deck.deck()) == 0 and len(self._stack.stack) > 1:
+                self._deck.set_deck(self._stack.stack[:-1])
+                self._stack.set_stack([self._stack.stack[len(self._stack.stack) - 1]])
+                self._deck.shuffle()
+            self._screen.fill((0, 128, 0))
+            self._deck.display_deck(self._screen)
+            self.show_player_turn(self._screen, self._font)
+            self.show_turn_options(self._screen, self._font)
+            # self._deck.display_top_card(self._screen)
+            self._stack.display_stack(self._screen)
+            for player in self._players:
+                player.display_hand(self._screen)
+                player.display_player(self._screen, self._font)
+            pygame.display.flip()
 
             # if player == self._player_turn:
             #     player.display_hand(self._screen)
             # else:  # Hide cards if not the players turn
             #     player.display_hand_facedown(self._screen)
-        pygame.display.flip()
+        else:
+            font = pygame.font.SysFont('timesnewromanbold', 50)
+            self._screen.fill((0, 128, 0))
+            text = font.render(self._winner.name + 'is the Winner!', False, (0, 0, 0))
+            self._screen.blit(text, (100, 100))
+            pygame.display.flip()
 
     def reverse(self):
         self._reversed = not self._reversed
@@ -215,5 +224,9 @@ class Game:
     def end_game_condition(self):
         for player in self._players:
             if len(player.hand) == 0:
-                self._running = False
-                print(self._running, 'Running')
+                self._winner = player
+
+    def display_winner_screen(self):
+        self._screen.fill((0, 128, 0))
+
+

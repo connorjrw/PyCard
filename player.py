@@ -1,4 +1,5 @@
 from errors import *
+import pygame
 
 
 class Player:

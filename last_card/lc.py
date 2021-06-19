@@ -4,6 +4,7 @@ from game import *
 from deck import *
 from player import *
 from dealer import *
+from copy import deepcopy
 
 
 class LastCard(Game):
@@ -41,6 +42,7 @@ class LastCard(Game):
 
     def play_card(self, player, card):
         super(LastCard, self).play_card(player, card)
+        self.set_default_rules()
         self.allow_multiple_cards()
         self.remove_all_turn_options()
         if card.value == 'Two':
@@ -59,19 +61,8 @@ class LastCard(Game):
         super(LastCard, self).action()
 
     def set_default_rules(self):
-        rules = self._stack.get_rules()
-        values = rules['Values']
-        suits = rules['Suits']
-        for value in values:
-            values[value]['Enforced'] = False
-            if values[value][value]:
-                values[value][value] = True
-            if value == 'Two' or value == 'Five':
-                values[value]['Enforced'] = True
-        for suit in suits:
-            suits[suit]['Enforced'] = False
-        rules = {"Values": values, "Suits": suits}
-        stack.update_rule(rules)
+        ms_rules = deepcopy(lc_rules.rules)
+        stack.update_rules(ms_rules)
 
     def allow_multiple_cards(self):
         rules = self._stack.get_rules()
@@ -117,14 +108,19 @@ class LastCard(Game):
             suits[suit]['Enforced'] = True
             suits[suit]['Default'] = False
             suits[suit][suit] = False
-        suits[e_suit]['Enforced'] = True
-        suits[e_suit][e_suit] = True
+            suits[suit][e_suit] = True
+        #suits[e_suit]['Enforced'] = True
+        #suits[e_suit]['Default'] = True
+        rules = {"Values": values, "Suits": suits}
+        print('rules', rules)
+        stack.update_rule(rules)
+        print('rules', stack.get_rules())
 
 
 pygame.init()
-
+master_rules = deepcopy(lc_rules.rules)
 deck = Deck([300, 193])
-stack = Stack([390, 193], lc_rules.rules)
+stack = Stack([390, 193], master_rules)
 
 deck.shuffle()
 
@@ -157,7 +153,7 @@ lc.add_turn_option('Draw', lc.deal_and_next_turn)
 stack.update_rule({"Values": {"Two": {'Default': False, 'Two': True, 'Enforced': False}}})
 stack.update_rule({"Values": {"Five": {'Default': False, 'Five': True, 'Enforced': False}}})
 
-dealer.deal(7)
+dealer.deal(2)
 deck.draw_to_stack(stack)
 
 # Run until the user asks to quit
@@ -166,4 +162,6 @@ while lc.running:
     for event in pygame.event.get():
         lc.handle_event(event)
     lc.generate()
+
+
 pygame.quit()

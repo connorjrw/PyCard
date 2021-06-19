@@ -69,7 +69,8 @@ class Stack:
             return (self._stack_rules['Suits'][self.top_card().suit][card.suit],
                     self._stack_rules['Suits'][self.top_card().suit]['Enforced'])
         else:
-            return self._stack_rules['Suits'][self.top_card().suit]['Default'], False
+            return (self._stack_rules['Suits'][self.top_card().suit]['Default'],
+                    self._stack_rules['Suits'][self.top_card().suit]['Enforced'])
 
     def validate_value(self, card):
         if card.value in self._stack_rules['Values'][self.top_card().value]:
@@ -91,6 +92,7 @@ class Stack:
         else:
             v_suit = self.validate_suit(card)
             v_value = self.validate_value(card)
+            print('values', v_suit, v_value)
             if v_suit[1] and v_value[1]:  # Both Enforced
                 return v_suit[0] and v_value[0]
             elif v_suit[1] and not v_value[1]:  # Suit is Enforced
