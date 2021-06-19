@@ -13,27 +13,27 @@ class LastCard(Game):
 
     # todo: condense into one
     def draw_two_action(self):
+        print('count', self._pickup_count)
         self._dealer.deal_to_player(self._player_turn, self._pickup_count)
-        self.remove_turn_option('Draw Two')
+        self.remove_all_turn_options()
         self.add_turn_option('Draw', self.deal_and_next_turn)
         self.set_next_player_turn()
         self._pickup_count = 0
         stack.update_rule({"Values": {"Two": {'Default': False, 'Two': True, 'Enforced': False}}})
 
     def draw_two(self):
-        self._pickup_count += 2
         self.set_next_player_turn()
         self.remove_turn_option('Draw')
-        self.add_turn_option('Draw Two', self.draw_two_action)
+        self.add_turn_option('Draw ' + str(self._pickup_count), self.draw_two_action)
 
     def draw_five(self):
         self.set_next_player_turn()
         self.remove_turn_option('Draw')
-        self.add_turn_option('Draw Five', self.draw_five_action)
+        self.add_turn_option('Draw ' + str(self._pickup_count), self.draw_five_action)
 
     def draw_five_action(self):
-        self._dealer.deal_to_player(self._player_turn, 5)
-        self.remove_turn_option('Draw Five')
+        self._dealer.deal_to_player(self._player_turn, self._pickup_count)
+        self.remove_all_turn_options()
         self.add_turn_option('Draw', self.deal_and_next_turn)
         self.set_next_player_turn()
         self._pickup_count = 0
@@ -42,8 +42,14 @@ class LastCard(Game):
     def play_card(self, player, card):
         super(LastCard, self).play_card(player, card)
         self.allow_multiple_cards()
-        self.remove_turn_option('Draw')
+        self.remove_all_turn_options()
+        if card.value == 'Two':
+            self._pickup_count += 2
+        if card.value == 'Five':
+            self._pickup_count += 5
+        # self.remove_turn_option('Draw')
         self.add_turn_option('Finish', lc.action)
+        self.end_game_condition()
 
     def action(self):
         # stack.update_rules(lc_rules.rules)
@@ -78,6 +84,42 @@ class LastCard(Game):
         rules = {"Values": values, "Suits": suits}
         stack.update_rule(rules)
 
+    def choose_suit(self):
+        self.remove_all_turn_options()
+        self.add_turn_option('Diamonds', self.enforce_diamonds)
+        self.add_turn_option('Clubs', self.enforce_clubs)
+        self.add_turn_option('Spades', self.enforce_spades)
+        self.add_turn_option('Hearts', self.enforce_hearts)
+
+    def enforce_diamonds(self):
+        self.enforce_suit('Diamonds')
+
+    def enforce_clubs(self):
+        self.enforce_suit('Clubs')
+
+    def enforce_spades(self):
+        self.enforce_suit('Spades')
+
+    def enforce_hearts(self):
+        self.enforce_suit('Hearts')
+
+    def enforce_suit(self, e_suit):
+        self.remove_all_turn_options()
+        self.add_turn_option('Draw', self.deal_and_next_turn)
+        self.set_next_player_turn()
+        rules = self._stack.get_rules()
+        values = rules['Values']
+        suits = rules['Suits']
+        for value in values:
+            values[value]['Enforced'] = False
+            values[value]['Default'] = True
+        for suit in suits:
+            suits[suit]['Enforced'] = True
+            suits[suit]['Default'] = False
+            suits[suit][suit] = False
+        suits[e_suit]['Enforced'] = True
+        suits[e_suit][e_suit] = True
+
 
 pygame.init()
 
@@ -108,19 +150,19 @@ lc.set_value_action('Eight', lc.skip_turn)
 lc.set_value_action('Jack', lc.reverse)
 lc.set_value_action('Two', lc.draw_two)
 lc.set_value_action('Five', lc.draw_five)
+lc.set_value_action('Ace', lc.choose_suit)
 lc.add_turn_option('Draw', lc.deal_and_next_turn)
 
 # Setting Default rules
 stack.update_rule({"Values": {"Two": {'Default': False, 'Two': True, 'Enforced': False}}})
 stack.update_rule({"Values": {"Five": {'Default': False, 'Five': True, 'Enforced': False}}})
 
-dealer.deal(12)
+dealer.deal(7)
 deck.draw_to_stack(stack)
 
 # Run until the user asks to quit
-running = True
 
-while running:
+while lc.running:
     for event in pygame.event.get():
         lc.handle_event(event)
     lc.generate()

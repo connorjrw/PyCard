@@ -20,6 +20,11 @@ class Game:
         self._actions = {}
         self._font = pygame.font.SysFont('timesnewromanbold', 20)
         self._player_turn_iden = [305, 315] # Add as paramater
+        self._running = True
+
+    @property
+    def running(self):
+        return self._running
 
     def handle_event(self, event):
         if event.type == pygame.QUIT:
@@ -71,6 +76,9 @@ class Game:
         for turn in self._turn_options:
             if turn.name == name:
                 self._turn_options.remove(turn)
+
+    def remove_all_turn_options(self):
+        self._turn_options = []
 
     def add_turn_option(self, name, action):
         exists = False
@@ -203,3 +211,9 @@ class Game:
     def deal_and_next_turn(self):
         self._dealer.deal_to_player(self._player_turn, 1)
         self.set_next_player_turn()
+
+    def end_game_condition(self):
+        for player in self._players:
+            if len(player.hand) == 0:
+                self._running = False
+                print(self._running, 'Running')
