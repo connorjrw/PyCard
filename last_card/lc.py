@@ -14,7 +14,6 @@ class LastCard(Game):
 
     # todo: condense into one
     def draw_two_action(self):
-        print('count', self._pickup_count)
         self._dealer.deal_to_player(self._player_turn, self._pickup_count)
         self.remove_all_turn_options()
         self.add_turn_option('Draw', self.deal_and_next_turn)
@@ -109,13 +108,8 @@ class LastCard(Game):
             suits[suit]['Default'] = False
             suits[suit][suit] = False
             suits[suit][e_suit] = True
-        #suits[e_suit]['Enforced'] = True
-        #suits[e_suit]['Default'] = True
         rules = {"Values": values, "Suits": suits}
-        print('rules', rules)
         stack.update_rule(rules)
-        print('rules', stack.get_rules())
-
 
 pygame.init()
 master_rules = deepcopy(lc_rules.rules)
@@ -162,6 +156,5 @@ while lc.running:
     for event in pygame.event.get():
         lc.handle_event(event)
     lc.generate()
-
 
 pygame.quit()

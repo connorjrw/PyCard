@@ -4,16 +4,18 @@ from card import Card
 
 
 class Deck:
-    def __init__(self, location):
+    def __init__(self, location=None):
         self._deck = self.create()
         self._back_image = 'images/card-back.png'
         self._back_image = pygame.image.load(self._back_image)
         self._back_image = pygame.transform.scale(self._back_image, (84, 114))
-        self._x = location[0]
-        self._y = location[1]
-        self._rect = pygame.Rect(location[0] + 90, location[1], 84, 114)
-        deck_image = pygame.image.load(r'./images/card-back.png')
-        deck_image = pygame.transform.scale(deck_image, (84, 114))
+        self._x = None
+        self._y = None
+        self._rect = None
+        if location is not None:
+            self._x = location[0]
+            self._y = location[1]
+            self._rect = pygame.Rect(location[0] + 90, location[1], 84, 114)
 
     def get_rect(self):
         return self._rect
@@ -57,7 +59,7 @@ class Deck:
         return self._deck[len(self._deck) - 1]
 
     def display_deck(self, display):
-        if len(self._deck) > 0: # Show nothing if deck is empty,
+        if len(self._deck) > 0 and self._rect is not None: # Show nothing if deck is empty,
             display.blit(self._back_image, (self._x, self._y))
 
     def display_top_card(self, display):

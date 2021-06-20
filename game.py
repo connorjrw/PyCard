@@ -4,8 +4,9 @@ from stack import *
 
 class Game:
 
-    def __init__(self, players, stack, deck, dealer):
+    def __init__(self, players, stack, deck, dealer, screen_size):
         self._stack = stack
+        self._screen_size = screen_size
         self._deck = deck
         self._players = players
         self._player_turn = players[0]
@@ -15,7 +16,7 @@ class Game:
         self._x_buf = 0
         self._y_buf = 0
         self.set_player_location()
-        self._screen = pygame.display.set_mode([800, 550])
+        self._screen = pygame.display.set_mode([screen_size[0], screen_size[1]])
         self._reversed = False
         self._actions = {}
         self._font = pygame.font.SysFont('timesnewromanbold', 20)
@@ -55,7 +56,7 @@ class Game:
                 y = pygame.mouse.get_pos()[1] - self._y_buf
 
                 self._current_card.set_position([x, y])
-                self._current_card.set_card_rect([x + self._x_buf, y + self._y_buf, 84, 114])
+                self._current_card.set_card_rect([x + self._x_buf, y + self._y_buf])
 
             if event.type == pygame.MOUSEBUTTONUP and self._current_card.is_moving:
             # Stop dragging card
@@ -105,11 +106,13 @@ class Game:
             x += 75
 
     def set_player_location(self):
+        x_mid = self._screen_size[0] / 2 - 84
+        y_max = self._screen_size[1] - 160
         if len(self._players) == 1:
-            self._players[0].set_location([10,10])
-        elif len(self._players) == 2:
             self._players[0].set_location([10, 10])
-            self._players[1].set_location([490, 370])
+        elif len(self._players) == 2:
+            self._players[0].set_location([x_mid, 10])
+            self._players[1].set_location([x_mid, y_max])
         elif len(self._players) == 3:
             self._players[0].set_location([10, 10])
             self._players[1].set_location([490, 370])
@@ -145,7 +148,7 @@ class Game:
         else:
             font = pygame.font.SysFont('timesnewromanbold', 50)
             self._screen.fill((0, 128, 0))
-            text = font.render(self._winner.name + 'is the Winner!', False, (0, 0, 0))
+            text = font.render(self._winner.name + ' is the Winner!', False, (0, 0, 0))
             self._screen.blit(text, (100, 100))
             pygame.display.flip()
 

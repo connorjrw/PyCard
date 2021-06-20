@@ -73,7 +73,6 @@ class Player:
 
     def display_hand(self, display):
         for index, card in enumerate(self._hand):
-            # print(card.get_position(), 'posit')
             card.display_card(display, card.get_position())
 
     def display_hand_facedown(self, display):
@@ -81,7 +80,7 @@ class Player:
             card.display_card_facedown(display, card.get_position())
 
     def set_hand_positions(self):
-        x = self._x
+        x = self._x - (20 * (len(self._hand) / 2))
         y = self._y + 30
         for index, card in enumerate(self._hand):
             if index == len(self._hand) - 1:

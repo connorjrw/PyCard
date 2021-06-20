@@ -11,7 +11,6 @@ class Stack:
         self._position = position
 
     def update_rules(self, rules):
-        print('updating rules')
         self._stack_rules = rules
 
     def update_rule(self, update):
@@ -37,7 +36,8 @@ class Stack:
         return pygame.Rect(self._position[0], self._position[1], self._size[0], self._size[1])
 
     def display_stack(self, display):
-        self._stack[len(self._stack) - 1].display_card(display, self._position)
+        if len(self._stack) > 0:
+            self._stack[len(self._stack) - 1].display_card(display, self._position)
 
     def remove_from_stack(self, card_to_remove, player):
         for index, card in enumerate(self._stack):
@@ -64,7 +64,6 @@ class Stack:
             return self._stack[len(self._stack) - 1]
 
     def validate_suit(self, card):
-
         if card.suit in self._stack_rules['Suits'][self.top_card().suit]:
             return (self._stack_rules['Suits'][self.top_card().suit][card.suit],
                     self._stack_rules['Suits'][self.top_card().suit]['Enforced'])
@@ -77,8 +76,11 @@ class Stack:
             return (self._stack_rules['Values'][self.top_card().value][card.value],
                     self._stack_rules['Values'][self.top_card().value]['Enforced'])
         else:
-            return (self._stack_rules['Values'][self.top_card().value]['Default'],
-                    self._stack_rules['Values'][self.top_card().value]['Enforced'])
+            playable = self._stack_rules['Values'][self.top_card().value]['Default']
+            enforced = self._stack_rules['Values'][self.top_card().value]['Enforced']
+            if self._stack_rules['Values'][self.top_card().value]['Rank']:
+                playable = self._stack_rules['Values'][card.value]['Rank'] <= self._stack_rules['Values'][self.top_card().value]['Rank']
+            return playable, enforced
 
     def validate_move(self, card):
         if self._stack_rules is None:
@@ -92,7 +94,6 @@ class Stack:
         else:
             v_suit = self.validate_suit(card)
             v_value = self.validate_value(card)
-            print('values', v_suit, v_value)
             if v_suit[1] and v_value[1]:  # Both Enforced
                 return v_suit[0] and v_value[0]
             elif v_suit[1] and not v_value[1]:  # Suit is Enforced
