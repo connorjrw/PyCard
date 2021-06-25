@@ -4,8 +4,8 @@ from stack import *
 
 class Game:
 
-    def __init__(self, players, stack, deck, dealer, screen_size):
-        self._stack = stack
+    def __init__(self, players, stacks, deck, dealer, screen_size, player_turn_iden):
+        self._stacks = stacks
         self._screen_size = screen_size
         self._deck = deck
         self._players = players
@@ -16,17 +16,25 @@ class Game:
         self._x_buf = 0
         self._y_buf = 0
         self.set_player_location()
+        self._player_turn_iden = player_turn_iden
         self._screen = pygame.display.set_mode([screen_size[0], screen_size[1]])
         self._reversed = False
         self._actions = {}
         self._font = pygame.font.SysFont('timesnewromanbold', 20)
-        self._player_turn_iden = [305, 315] # Add as paramater
         self._running = True
         self._winner = None
+        self._current_stack = None
 
     @property
     def running(self):
         return self._running
+
+    @property
+    def current_stack(self):
+        return self._current_stack
+
+    def set_current_stack(self, current_stack):
+        self._current_stack = current_stack
 
     def winner(self):
         return self._winner
@@ -62,15 +70,17 @@ class Game:
             # Stop dragging card
                 x = pygame.mouse.get_pos()[0]
                 y = pygame.mouse.get_pos()[1]
-                if self._stack.get_stack_rect().colliderect(self._current_card.get_card_rect()):
-                    try:
-                        self.play_card(self._player_turn, self._current_card)
-                    except InvalidCardError:
-                        # Also error
+                for stack in self._stacks:
+                    if stack.get_stack_rect().colliderect(self._current_card.get_card_rect()):
+                        try:
+                            self.set_current_stack(stack)
+                            self.play_card(self._player_turn, self._current_card)
+                        except InvalidCardError:
+                            # Also error
+                            self._current_card.set_position(self._current_card.get_previous_position())
+                    else:
                         self._current_card.set_position(self._current_card.get_previous_position())
-                else:
-                    self._current_card.set_position(self._current_card.get_previous_position())
-                self._current_card.set_moving(False)
+                    self._current_card.set_moving(False)
 
     @property
     def turn_options(self):
@@ -97,7 +107,9 @@ class Game:
         color = (220, 220, 220)
         loc = self._player_turn.get_location()
         x = loc[0]
-        y = loc[1] + 150
+        y = loc[1]
+        if self._player_turn.player_name_loc != 'Below':
+            y = loc[1] + 150
         for turn in self._turn_options:
             turn.set_rect(pygame.Rect(x, y, 70, 25))
             pygame.draw.rect(display, color, pygame.Rect(x, y, 70, 25))
@@ -106,36 +118,41 @@ class Game:
             x += 75
 
     def set_player_location(self):
-        x_mid = self._screen_size[0] / 2 - 84
-        y_max = self._screen_size[1] - 160
+        x_start = 50
+        y_start = 20
+        x_max = self._screen_size[0] - 120
+        x_mid = self._screen_size[0] / 2 - 42
+        y_max = self._screen_size[1] - 185
         if len(self._players) == 1:
             self._players[0].set_location([10, 10])
         elif len(self._players) == 2:
             self._players[0].set_location([x_mid, 10])
             self._players[1].set_location([x_mid, y_max])
+            self._players[1].set_player_name_loc('Below')
         elif len(self._players) == 3:
             self._players[0].set_location([10, 10])
             self._players[1].set_location([490, 370])
             self._players[2].set_location([10, 370])
         elif len(self._players) == 4:
-            self._players[0].set_location([10, 10])
-            self._players[1].set_location([490, 10])
-            self._players[2].set_location([490, 370])
-            self._players[3].set_location([10, 370])
+            self._players[0].set_location([x_start, y_start])
+            self._players[1].set_location([x_max, y_start])
+            self._players[2].set_location([x_max, y_max])
+            self._players[3].set_location([x_start, y_max])
+
+    def add_to_generate(self):
+        return
 
     def generate(self):
         # If the deck is empty, move all but top card from stack back to deck
         if self._winner is None:
-            if len(self._deck.deck()) == 0 and len(self._stack.stack) > 1:
-                self._deck.set_deck(self._stack.stack[:-1])
-                self._stack.set_stack([self._stack.stack[len(self._stack.stack) - 1]])
-                self._deck.shuffle()
+            self.add_to_generate()
             self._screen.fill((0, 128, 0))
             self._deck.display_deck(self._screen)
             self.show_player_turn(self._screen, self._font)
             self.show_turn_options(self._screen, self._font)
             # self._deck.display_top_card(self._screen)
-            self._stack.display_stack(self._screen)
+            for stack in self._stacks:
+                stack.display_stack(self._screen)
             for player in self._players:
                 player.display_hand(self._screen)
                 player.display_player(self._screen, self._font)
@@ -189,7 +206,7 @@ class Game:
         self._actions[card_suit] = action
 
     def action(self):
-        card = self._stack.top_card()
+        card = self._current_stack.top_card()
         if card.card_name() in self._actions:
             self._actions[card.card_name()]()
         elif card.value in self._actions:
@@ -205,14 +222,16 @@ class Game:
 
     def play_card(self, player, card):
         if player == self._player_turn:
-            player.play_card(card, self._stack)
+            player.play_card(card, self._current_stack)
             # self.action()
         else:
             raise InvalidTurnError
 
     def show_player_turn(self, display, font):
-        text = font.render(self._player_turn.name + "'s turn", False, (0, 0, 0))
-        display.blit(text, (self._player_turn_iden[0], self._player_turn_iden[1]))
+        text_str = self._player_turn.name + "'s turn"
+        text_str_width, text_str_height = font.size(text_str)
+        text = font.render(text_str, False, (0, 0, 0))
+        display.blit(text, (self._player_turn_iden[0] + 42 - text_str_width /2, self._player_turn_iden[1]))
 
     def pass_turn(self, player):
         if player == self._player_turn:

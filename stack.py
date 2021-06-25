@@ -36,13 +36,23 @@ class Stack:
         return pygame.Rect(self._position[0], self._position[1], self._size[0], self._size[1])
 
     def display_stack(self, display):
+        RED = (0, 0, 0)
+        GRAY = (0, 128, 0)
+        smaller_rect = pygame.Rect(self._position[0] + 1, self._position[1] + 1, self._size[0] - 2, self._size[1] - 2)
+
         if len(self._stack) > 0:
             self._stack[len(self._stack) - 1].display_card(display, self._position)
+        else:
+            pygame.draw.rect(display, RED, self.get_stack_rect())
+            pygame.draw.rect(display, GRAY, smaller_rect)
 
     def remove_from_stack(self, card_to_remove, player):
         for index, card in enumerate(self._stack):
             if card_to_remove == card:
                 del self._stack[index]
+
+    def remove_all_from_stack(self):
+        self._stack = []
 
     def add_to_stack(self, card):
         if self.validate_move(card):
@@ -78,7 +88,7 @@ class Stack:
         else:
             playable = self._stack_rules['Values'][self.top_card().value]['Default']
             enforced = self._stack_rules['Values'][self.top_card().value]['Enforced']
-            if self._stack_rules['Values'][self.top_card().value]['Rank']:
+            if 'Rank' in self._stack_rules['Values'][self.top_card().value]:
                 playable = self._stack_rules['Values'][card.value]['Rank'] <= self._stack_rules['Values'][self.top_card().value]['Rank']
             return playable, enforced
 

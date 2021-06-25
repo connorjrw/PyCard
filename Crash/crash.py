@@ -15,12 +15,17 @@ class Crash(Game):
         super(Crash, self).play_card(player, card)
         self.set_next_player_turn()
 
+    def pick_up_stack(self):
+        self._player_turn.add_multiple_to_hand(stack.stack)
+        stack.remove_all_from_stack()
+        self.set_next_player_turn()
 
+screen_size = [1200, 750]
 
 pygame.init()
 deck = Deck()
 rules = crash_rules.rules
-stack = Stack([416, 186], rules)
+stack = Stack([screen_size[0] / 2 - 42, screen_size[1] / 2 - 57], rules)
 
 deck.shuffle()
 
@@ -35,10 +40,11 @@ dealer = Dealer(deck, players)
 # font
 pygame.font.init()
 
-screen_size = [1000, 600]
+
 
 # game init
 crash = Crash(players, stack, deck, dealer, screen_size)
+crash.add_turn_option('Pick Up', crash.pick_up_stack)
 
 # Setting Default rules
 

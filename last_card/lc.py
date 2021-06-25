@@ -8,9 +8,9 @@ from copy import deepcopy
 
 
 class LastCard(Game):
-    def __init__(self, players, stack, deck, dealer):
+    def __init__(self, players, stacks, deck, dealer, screen_size, player_turn_iden):
         self._pickup_count = 0
-        super().__init__(players, stack, deck, dealer)
+        super().__init__(players, stacks, deck, dealer, screen_size, player_turn_iden)
 
     # todo: condense into one
     def draw_two_action(self):
@@ -20,6 +20,12 @@ class LastCard(Game):
         self.set_next_player_turn()
         self._pickup_count = 0
         stack.update_rule({"Values": {"Two": {'Default': False, 'Two': True, 'Enforced': False}}})
+
+    def add_to_generate(self):
+        if len(self._deck.deck()) == 0 and len(self._stacks[0].stack) > 1:
+            self._deck.set_deck(self._stacks[0].stack[:-1])
+            self._stacks[0].set_stack([self._stacks[0].stack[len(self._stacks[0].stack) - 1]])
+            self._deck.shuffle()
 
     def draw_two(self):
         self.set_next_player_turn()
@@ -64,7 +70,7 @@ class LastCard(Game):
         stack.update_rules(ms_rules)
 
     def allow_multiple_cards(self):
-        rules = self._stack.get_rules()
+        rules = self._stacks[0].get_rules()
         values = rules['Values']
         suits = rules['Suits']
         for value in values:
@@ -97,7 +103,7 @@ class LastCard(Game):
         self.remove_all_turn_options()
         self.add_turn_option('Draw', self.deal_and_next_turn)
         self.set_next_player_turn()
-        rules = self._stack.get_rules()
+        rules = self._stacks[0].get_rules()
         values = rules['Values']
         suits = rules['Suits']
         for value in values:
@@ -132,10 +138,12 @@ dealer = Dealer(deck, players)
 pygame.font.init()
 
 # Set up the drawing window
-screen = pygame.display.set_mode([800, 550])
+screen_size = [800, 550]
+
+player_turn_iden = stack.get_position()[0], stack.get_position()[1] + 120 # Add as paramater
 
 # game init
-lc = LastCard(players, stack, deck, dealer)
+lc = LastCard(players, [stack], deck, dealer, screen_size, player_turn_iden)
 lc.set_value_action('Eight', lc.skip_turn)
 lc.set_value_action('Jack', lc.reverse)
 lc.set_value_action('Two', lc.draw_two)

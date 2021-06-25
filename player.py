@@ -8,10 +8,18 @@ class Player:
         self._hand = []
         self._x = 0
         self._y = 0
+        self._player_name_loc = 'Above'
 
     def set_location(self, location):
         self._x = location[0]
         self._y = location[1]
+
+    @property
+    def player_name_loc(self):
+        return self._player_name_loc
+
+    def set_player_name_loc(self, location):
+        self._player_name_loc = location
 
     def get_location(self):
         return [self._x, self._y]
@@ -93,4 +101,7 @@ class Player:
 
     def display_player(self, display, font):
         text = font.render(self._name, False, (0, 0, 0))
-        display.blit(text, (self._x, self._y))
+        if self._player_name_loc == 'Below':
+            display.blit(text, (self._x, self._y + 150))
+        else:
+            display.blit(text, (self._x, self._y))
