@@ -20,10 +20,11 @@ class Game:
         self._screen = pygame.display.set_mode([screen_size[0], screen_size[1]])
         self._reversed = False
         self._actions = {}
+        self._seq_action = {}
         self._font = pygame.font.SysFont('timesnewromanbold', 20)
         self._running = True
         self._winner = None
-        self._current_stack = None
+        self._current_stack = stacks[0]
 
     @property
     def running(self):
@@ -49,6 +50,17 @@ class Game:
                         self._current_card = card
                         self._current_card.set_moving(True)
                         self._current_card.set_previous_position(self._current_card.get_position())
+
+                        # Get difference between cursor and top of card
+                        self._x_buf = pygame.mouse.get_pos()[0] - self._current_card.get_position()[0]
+                        self._y_buf = pygame.mouse.get_pos()[1] - self._current_card.get_position()[1]
+                for stack in player.stacks:
+                    if stack.get_stack_rect().collidepoint(pygame.mouse.get_pos()) and self._player_turn == player \
+                            and not stack.locked:
+                        if len(stack.stack) > 0:
+                            self._current_card = stack.stack[len(stack.stack) - 1]
+                            self._current_card.set_moving(True)
+                            self._current_card.set_previous_position(self._current_card.get_position())
 
                         # Get difference between cursor and top of card
                         self._x_buf = pygame.mouse.get_pos()[0] - self._current_card.get_position()[0]
@@ -106,7 +118,7 @@ class Game:
         font = pygame.font.SysFont('timesnewromanbold', 16)
         color = (220, 220, 220)
         loc = self._player_turn.get_location()
-        x = loc[0]
+        x = loc[0] - 200
         y = loc[1]
         if self._player_turn.player_name_loc != 'Below':
             y = loc[1] + 150
@@ -154,6 +166,7 @@ class Game:
             for stack in self._stacks:
                 stack.display_stack(self._screen)
             for player in self._players:
+                player.display_stacks(self._screen)
                 player.display_hand(self._screen)
                 player.display_player(self._screen, self._font)
             pygame.display.flip()
@@ -205,6 +218,23 @@ class Game:
     def set_suit_action(self, card_suit, action):
         self._actions[card_suit] = action
 
+    def set_sequence_action(self, count, action):
+        self._seq_action[count] = action
+
+    def seq_action(self):
+        for count in self._seq_action:
+            cards = self._current_stack.top_cards(count)
+            if len(cards) == count:
+                value = cards[0].value
+                matching = True
+                for card in cards:
+                    if card.value is not value:
+                        matching = False
+                if matching:
+                    self._seq_action[count]()
+                    return True
+        return False
+
     def action(self):
         card = self._current_stack.top_card()
         if card.card_name() in self._actions:
@@ -214,7 +244,8 @@ class Game:
         elif card.suit in self._actions:
             self._actions[card.suit]()
         else:
-            self.set_next_player_turn()
+            if not self.seq_action():
+                self.set_next_player_turn()
 
     def skip_turn(self):
         self.set_next_player_turn()

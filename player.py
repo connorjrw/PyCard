@@ -9,6 +9,20 @@ class Player:
         self._x = 0
         self._y = 0
         self._player_name_loc = 'Above'
+        self._stacks = []
+
+    @property
+    def stacks(self):
+        return self._stacks
+
+    def set_stacks(self, stacks):
+        self._stacks = stacks
+        print(self._stacks)
+
+    def display_stacks(self, display):
+        for stack in self._stacks:
+            # print(type(stack.stack[0]))
+            stack.display_stack(display)
 
     def set_location(self, location):
         self._x = location[0]
@@ -34,10 +48,17 @@ class Player:
         self.set_hand_positions()
 
     def remove_from_hand(self, card):
+        found = False
         if card in self._hand:
             self._hand.remove(card)
             self.set_hand_positions()
+            found = True
         else:
+            for stack in self._stacks:
+                if card in stack.stack:
+                    stack.remove_from_stack(card)
+                    found = True
+        if not found:
             raise CardNotInHandError()
 
     def hand_as_string(self):
@@ -56,7 +77,7 @@ class Player:
         for card in self._hand:
             if card.card_name() == card_string:
                 return card
-        raise CardNotInHandError()
+        # raise CardNotInHandError()
 
     def play_card(self, card, stack):
         stack.add_to_stack(card)

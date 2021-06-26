@@ -9,6 +9,15 @@ class Stack:
         self._stack_rules = stack_rules
         self._size = [84, 114]
         self._position = position
+        self._locked = False
+
+    @property
+    def locked(self):
+        return self._locked
+
+    @locked.setter
+    def locked(self, locked):
+        self._locked = locked
 
     def update_rules(self, rules):
         self._stack_rules = rules
@@ -41,12 +50,13 @@ class Stack:
         smaller_rect = pygame.Rect(self._position[0] + 1, self._position[1] + 1, self._size[0] - 2, self._size[1] - 2)
 
         if len(self._stack) > 0:
-            self._stack[len(self._stack) - 1].display_card(display, self._position)
+            for card in self._stack:
+                card.display_card(display, 0)
         else:
             pygame.draw.rect(display, RED, self.get_stack_rect())
             pygame.draw.rect(display, GRAY, smaller_rect)
 
-    def remove_from_stack(self, card_to_remove, player):
+    def remove_from_stack(self, card_to_remove):
         for index, card in enumerate(self._stack):
             if card_to_remove == card:
                 del self._stack[index]
@@ -57,8 +67,12 @@ class Stack:
     def add_to_stack(self, card):
         if self.validate_move(card):
             self._stack.append(card)
+            card.set_position(self._position)
         else:
             raise InvalidCardError()
+
+    def deal_to_stack(self, card):
+        self._stack.append(card)
 
     def top_card_from_stack(self, player):
         self._stack.remove(self._stack)
@@ -67,11 +81,28 @@ class Stack:
     def stack(self):
         return self._stack
 
+    @stack.setter
+    def stack(self, stack):
+        self._stack = stack
+
     def top_card(self):
         if len(self._stack) == 0:
             return None
         else:
             return self._stack[len(self._stack) - 1]
+
+    def top_cards(self, number):
+        if len(self._stack) == 0:
+            return None
+        elif len(self._stack) < number:
+            return self._stack[:]
+        else:
+            return self._stack[len(self._stack) - number:]
+
+    def add_cards_to_stack(self, cards):
+        for card in cards:
+            card.set_position(self._position)
+            self._stack.append(card)
 
     def validate_suit(self, card):
         if card.suit in self._stack_rules['Suits'][self.top_card().suit]:

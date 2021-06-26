@@ -12,10 +12,12 @@ class Card:
         self._previous_position = []
         self._is_moving = False
         self._size = [84, 114]
+        self._is_facedown = False
+        self._hello = 'asd'
 
     def set_moving(self, value):
-
         self._is_moving = value
+
     @property
     def size(self):
         return self._size
@@ -48,6 +50,10 @@ class Card:
     def value(self):
         return self._value
 
+    @property
+    def is_facedown(self):
+        return self._is_facedown
+
     @suit.setter
     def suit(self, suit):
         self._suit = suit
@@ -56,10 +62,17 @@ class Card:
     def value(self, value):
         self._value = value
 
+    @is_facedown.setter
+    def is_facedown(self, is_facedown):
+        self._is_facedown = is_facedown
+
     def display_card(self, display, location):
-        card_img = pygame.image.load(self._image)
+        if self.is_facedown:
+            card_img = pygame.image.load(self._facedown)
+        else:
+            card_img = pygame.image.load(self._image)
         card_img = pygame.transform.scale(card_img, (self._size[0], self._size[1]))
-        display.blit(card_img, ([location[0], location[1]]))
+        display.blit(card_img, ([self._position[0], self._position[1]]))
 
     def display_card_facedown(self, display, location):
         card_img = pygame.image.load(self._facedown)
