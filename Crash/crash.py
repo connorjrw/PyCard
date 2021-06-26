@@ -17,6 +17,7 @@ class Crash(Game):
         card.is_facedown = False
         self.action()
         # self.set_next_player_turn()
+        # little change
 
     def pick_up_stack(self):
         self._player_turn.add_multiple_to_hand(self.current_stack.stack)
