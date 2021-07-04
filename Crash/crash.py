@@ -106,6 +106,17 @@ class Crash(Game):
     def clear_pile(self):
         self._stacks[0].stack = []
 
+    def end_game_condition(self):
+        for player in self._players:
+            if len(player.hand) == 0:
+                won = True
+                for stack in player.stacks:
+                    if len(stack.stack) > 0:
+                        won = False
+                if won:
+                    self._winner = player
+
+
 screen_size = [1200, 750]
 
 pygame.init()

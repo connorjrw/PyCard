@@ -254,6 +254,7 @@ class Game:
     def play_card(self, player, card):
         if player == self._player_turn:
             player.play_card(card, self._current_stack)
+            self.end_game_condition()
             # self.action()
         else:
             raise InvalidTurnError
