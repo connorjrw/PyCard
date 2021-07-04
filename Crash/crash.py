@@ -17,6 +17,7 @@ class Crash(Game):
         card.is_facedown = False
         self.allow_multiple_cards()
         self.add_turn_option('Finish', self.action)
+        self.remove_turn_option('Pick Up')
 
     def action(self):
         super(Crash, self).action()
@@ -132,6 +133,9 @@ deck.shuffle()
 player1 = Player('Player 1')
 player2 = Player('Player 2')
 players = [player1, player2]
+
+player1.option_loc = -200
+player2.option_loc = -200
 
 # dealer
 dealer = Dealer(deck, players)

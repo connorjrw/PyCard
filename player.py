@@ -9,11 +9,20 @@ class Player:
         self._x = 0
         self._y = 0
         self._player_name_loc = 'Above'
+        self._option_loc = 0
         self._stacks = []
 
     @property
     def stacks(self):
         return self._stacks
+
+    @property
+    def option_loc(self):
+        return self._option_loc
+
+    @option_loc.setter
+    def option_loc(self, value):
+        self._option_loc = value
 
     def set_stacks(self, stacks):
         self._stacks = stacks

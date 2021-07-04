@@ -60,9 +60,10 @@ class LastCard(Game):
 
     def action(self):
         # stack.update_rules(lc_rules.rules)
+        super(LastCard, self).action()
         self.set_default_rules()
         self.remove_turn_option('Finish')
-        self.add_turn_option('Draw', self.deal)
+        self.add_turn_option('Draw', self.deal_and_next_turn)
 
     def set_default_rules(self):
         ms_rules = deepcopy(lc_rules.rules)
