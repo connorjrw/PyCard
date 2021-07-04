@@ -118,7 +118,7 @@ class Game:
         font = pygame.font.SysFont('timesnewromanbold', 16)
         color = (220, 220, 220)
         loc = self._player_turn.get_location()
-        x = loc[0] - 200
+        x = loc[0] - (200 + 20 * len(self._turn_options))
         y = loc[1]
         if self._player_turn.player_name_loc != 'Below':
             y = loc[1] + 150
