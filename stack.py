@@ -10,6 +10,7 @@ class Stack:
         self._size = [84, 114]
         self._position = position
         self._locked = False
+        self._rule_action = None
 
     @property
     def locked(self):
@@ -64,11 +65,16 @@ class Stack:
     def remove_all_from_stack(self):
         self._stack = []
 
+    def rule_action(self):
+        if self._rule_action is not None:
+            self._rule_action()
+
     def add_to_stack(self, card):
         if self.validate_move(card):
             self._stack.append(card)
             card.set_position(self._position)
         else:
+            self.rule_action()
             raise InvalidCardError()
 
     def deal_to_stack(self, card):
@@ -104,6 +110,9 @@ class Stack:
             card.set_position(self._position)
             self._stack.append(card)
 
+    def set_rule_action(self, rule_action):
+        self._rule_action = rule_action
+
     def validate_suit(self, card):
         if card.suit in self._stack_rules['Suits'][self.top_card().suit]:
             return (self._stack_rules['Suits'][self.top_card().suit][card.suit],
@@ -120,7 +129,8 @@ class Stack:
             playable = self._stack_rules['Values'][self.top_card().value]['Default']
             enforced = self._stack_rules['Values'][self.top_card().value]['Enforced']
             if 'Rank' in self._stack_rules['Values'][self.top_card().value]:
-                playable = self._stack_rules['Values'][card.value]['Rank'] <= self._stack_rules['Values'][self.top_card().value]['Rank']
+                if self._stack_rules['Values'][self.top_card().value]['Rank'] is not None:
+                    playable = self._stack_rules['Values'][card.value]['Rank'] <= self._stack_rules['Values'][self.top_card().value]['Rank']
             return playable, enforced
 
     def validate_move(self, card):

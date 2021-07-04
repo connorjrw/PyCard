@@ -15,9 +15,17 @@ class Crash(Game):
     def play_card(self, player, card):
         super(Crash, self).play_card(player, card)
         card.is_facedown = False
-        self.action()
-        # self.set_next_player_turn()
-        # little change
+        self.allow_multiple_cards()
+        self.add_turn_option('Finish', self.action)
+
+    def action(self):
+        super(Crash, self).action()
+        self.set_default_rules()
+        self.remove_turn_option('Finish')
+
+    def play_and_pick_up(self):
+        self._player_turn.remove_from_hand(self._current_card)
+        self.pick_up_stack()
 
     def pick_up_stack(self):
         self._player_turn.add_multiple_to_hand(self.current_stack.stack)
@@ -35,13 +43,27 @@ class Crash(Game):
 
     def set_default_rules(self):
         ms_rules = deepcopy(crash_rules.rules)
-        stacks[0].update_rules(ms_rules)
+        stacks[0].update_rule(ms_rules)
+
+    def allow_multiple_cards(self):
+        current_rules = deepcopy(crash_rules.rules)
+        values = current_rules['Values']
+        suits = current_rules['Suits']
+        for value in values:
+            values[value][value] = True
+            values[value]['Rank'] = None
+            values[value]['Enforced'] = True
+        for suit in suits:
+            suits[suit]['Enforced'] = False
+        new_rules = {"Values": values, "Suits": suits}
+        self._stacks[0].update_rule(new_rules)
 
     def validate_stack_status(self):
+        self._stacks[0].set_rule_action(None)
         left = self.player_turn.stacks[0]
         mid = self.player_turn.stacks[1]
         right = self.player_turn.stacks[2]
-        self.set_default_rules()
+        # self.set_default_rules()
         if len(self.player_turn.hand) == 0:
             left.locked = False
             mid.locked = False
@@ -58,7 +80,8 @@ class Crash(Game):
             if len(right.stack) == 1:
                 right.locked = True
             if len(left.stack) <= 1 and len(mid.stack) <= 1 and len(right.stack) <= 1:
-                self.allow_all_cards()
+                # self.allow_all_cards()
+                self._stacks[0].set_rule_action(self.play_and_pick_up)
                 left.locked = False
                 mid.locked = False
                 right.locked = False
@@ -83,12 +106,11 @@ class Crash(Game):
     def clear_pile(self):
         self._stacks[0].stack = []
 
-
 screen_size = [1200, 750]
 
 pygame.init()
 deck = Deck()
-rules = crash_rules.rules
+rules = deepcopy(crash_rules.rules)
 stacks = [Stack([screen_size[0] / 2 - 42, screen_size[1] / 2 - 57], rules)]
 player_turn_iden = stacks[0].get_position()[0], stacks[0].get_position()[1] + 120 # Add as paramater
 
@@ -118,7 +140,7 @@ crash.set_sequence_action(4, crash.clear_pile)
 
 # Setting Default rules
 
-dealer.deal()
+dealer.deal(5)
 crash.validate_stack_status()
 
 # deck.draw_to_stack(stack)

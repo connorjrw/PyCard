@@ -4,7 +4,7 @@ rules = {
     },
     "Suits": {
         "Spades": {
-            'Default': True,
+            'Default': False,
             'Enforced': False
         },
         "Clubs": {
