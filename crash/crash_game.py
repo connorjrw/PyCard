@@ -3,7 +3,7 @@ from game import *
 from deck import *
 from player import *
 from dealer import *
-from Crash import crash_rules
+from crash import crash_rules
 from copy import deepcopy
 # import pygame
 
@@ -23,6 +23,7 @@ class Crash(Game):
         super(Crash, self).action()
         self.set_default_rules()
         self.remove_turn_option('Finish')
+        self.add_turn_option('Pick Up', self.pick_up_stack)
 
     def play_and_pick_up(self):
         self._player_turn.remove_from_hand(self._current_card)
@@ -89,7 +90,7 @@ class Crash(Game):
 
     def create_stacks(self):
         for player in self._players:
-            y = deepcopy(player.get_location()[1])
+            y = deepcopy(player.location[1])
             x = screen_size[0] / 2 - 136
             player_stacks = []
             if player.player_name_loc == 'Above':
@@ -102,7 +103,7 @@ class Crash(Game):
                 current_stack.stack[0].is_facedown = True
                 player_stacks.append(current_stack)
                 x += 100
-            player.set_stacks(player_stacks)
+            player.stacks = player_stacks
 
     def clear_pile(self):
         self._stacks[0].stack = []
@@ -150,8 +151,8 @@ pygame.font.init()
 crash = Crash(players, stacks, deck, dealer, screen_size, player_turn_iden)
 crash.create_stacks()
 crash.add_turn_option('Pick Up', crash.pick_up_stack)
-crash.set_value_action('Ten', crash.clear_pile)
-crash.set_sequence_action(4, crash.clear_pile)
+crash.add_value_action('Ten', crash.clear_pile)
+crash.add_sequence_action(4, crash.clear_pile)
 
 # Setting Default rules
 

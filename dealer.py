@@ -10,7 +10,7 @@ class Dealer:
         ttl_players = len(self._players)
         if card_count != 52:
             card_count = card_count * len(self._players)
-        for card in self._deck.deck()[:card_count]:
+        for card in self._deck.deck[:card_count]:
             self._players[cp_index].add_to_hand(card)
             cp_index += 1
             self._deck.remove_card(card)
@@ -18,14 +18,14 @@ class Dealer:
                 cp_index = 0
 
     def deal_to_player(self, player, cards):
-        if cards > len(self._deck.deck()):  # if nothing left to deal, deal the rest of the pack
-            cards = len(self._deck.deck())
-        dealt_cards = self._deck.deck()[:cards]
+        if cards > len(self._deck.deck):  # if nothing left to deal, deal the rest of the pack
+            cards = len(self._deck.deck)
+        dealt_cards = self._deck.deck[:cards]
         player.add_multiple_to_hand(dealt_cards)
         self._deck.remove_multiple_cards(dealt_cards)
 
     def deal_to_stack(self, stack, card_count = 52):
-        cards = self._deck.deck()[:card_count]
+        cards = self._deck.deck[:card_count]
         self._deck.remove_multiple_cards(cards)
         stack.add_cards_to_stack(cards)
 

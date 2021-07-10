@@ -20,6 +20,14 @@ class Stack:
     def locked(self, locked):
         self._locked = locked
 
+    @property
+    def stack(self):
+        return self._stack
+
+    @stack.setter
+    def stack(self, stack):
+        self._stack = stack
+
     def update_rules(self, rules):
         self._stack_rules = rules
 
@@ -38,9 +46,6 @@ class Stack:
 
     def get_position(self):
         return self._position
-
-    def set_stack(self, stack):
-        self._stack = stack
 
     def get_stack_rect(self):
         return pygame.Rect(self._position[0], self._position[1], self._size[0], self._size[1])
@@ -82,14 +87,6 @@ class Stack:
 
     def top_card_from_stack(self, player):
         self._stack.remove(self._stack)
-
-    @property
-    def stack(self):
-        return self._stack
-
-    @stack.setter
-    def stack(self, stack):
-        self._stack = stack
 
     def top_card(self):
         if len(self._stack) == 0:
@@ -138,7 +135,7 @@ class Stack:
             return True
         elif self.top_card() is None:
             if card.suit in self._stack_rules['None']:
-                # Further validation
+                # Further validation required
                 suit = self._stack_rules['None'][card.suit]
             else:
                 return self._stack_rules['None']['Default']

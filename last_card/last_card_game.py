@@ -1,5 +1,5 @@
 import pygame
-from last_card import lc_rules
+from last_card import last_card_rules
 from game import *
 from deck import *
 from player import *
@@ -22,9 +22,9 @@ class LastCard(Game):
         stack.update_rule({"Values": {"Two": {'Default': False, 'Two': True, 'Enforced': False}}})
 
     def add_to_generate(self):
-        if len(self._deck.deck()) == 0 and len(self._stacks[0].stack) > 1:
-            self._deck.set_deck(self._stacks[0].stack[:-1])
-            self._stacks[0].set_stack([self._stacks[0].stack[len(self._stacks[0].stack) - 1]])
+        if len(self._deck.deck) == 0 and len(self._stacks[0].stack) > 1:
+            self._deck.deck = self._stacks[0].stack[:-1]
+            self._stacks[0].stack = [self._stacks[0].stack[len(self._stacks[0].stack) - 1]]
             self._deck.shuffle()
 
     def draw_two(self):
@@ -66,7 +66,7 @@ class LastCard(Game):
         self.add_turn_option('Draw', self.deal_and_next_turn)
 
     def set_default_rules(self):
-        ms_rules = deepcopy(lc_rules.rules)
+        ms_rules = deepcopy(last_card_rules.rules)
         stack.update_rules(ms_rules)
 
     def allow_multiple_cards(self):
@@ -118,7 +118,7 @@ class LastCard(Game):
         stack.update_rule(rules)
 
 pygame.init()
-master_rules = deepcopy(lc_rules.rules)
+master_rules = deepcopy(last_card_rules.rules)
 deck = Deck([300, 193])
 stack = Stack([390, 193], master_rules)
 
@@ -144,11 +144,11 @@ player_turn_iden = stack.get_position()[0], stack.get_position()[1] + 120 # Add 
 
 # game init
 lc = LastCard(players, [stack], deck, dealer, screen_size, player_turn_iden)
-lc.set_value_action('Eight', lc.skip_turn)
-lc.set_value_action('Jack', lc.reverse)
-lc.set_value_action('Two', lc.draw_two)
-lc.set_value_action('Five', lc.draw_five)
-lc.set_value_action('Ace', lc.choose_suit)
+lc.add_value_action('Eight', lc.skip_turn)
+lc.add_value_action('Jack', lc.reverse)
+lc.add_value_action('Two', lc.draw_two)
+lc.add_value_action('Five', lc.draw_five)
+lc.add_value_action('Ace', lc.choose_suit)
 lc.add_turn_option('Draw', lc.deal_and_next_turn)
 
 # Setting Default rules

@@ -9,9 +9,6 @@ class TurnOptionButton:
         self._y = 0
         self._rect = pygame.Rect(0, 0, 0, 0)
 
-    def set_rect(self, dimen):
-        self._rect = pygame.Rect(dimen[0], dimen[1], dimen[2], dimen[3])
-
     @property
     def name(self):
         return self._name
@@ -19,6 +16,10 @@ class TurnOptionButton:
     @property
     def rect(self):
         return self._rect
+
+    @rect.setter
+    def rect(self, dimen):
+        self._rect = pygame.Rect(dimen[0], dimen[1], dimen[2], dimen[3])
 
     @property
     def action(self):

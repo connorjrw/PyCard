@@ -6,8 +6,7 @@ class Player:
     def __init__(self, name):
         self._name = name
         self._hand = []
-        self._x = 0
-        self._y = 0
+        self._location = [0, 0]
         self._player_name_loc = 'Above'
         self._option_loc = 0
         self._stacks = []
@@ -15,6 +14,10 @@ class Player:
     @property
     def stacks(self):
         return self._stacks
+
+    @stacks.setter
+    def stacks(self, value):
+        self._stacks = value
 
     @property
     def option_loc(self):
@@ -24,28 +27,38 @@ class Player:
     def option_loc(self, value):
         self._option_loc = value
 
-    def set_stacks(self, stacks):
-        self._stacks = stacks
-        print(self._stacks)
+    @property
+    def player_name_loc(self):
+        return self._player_name_loc
+
+    @player_name_loc.setter
+    def player_name_loc(self, location):
+        self._player_name_loc = location
+
+    @property
+    def location(self):
+        return self._location
+
+    @location.setter
+    def location(self, value):
+        self._location = value
+
+    @property
+    def hand(self):
+        return self._hand
+
+    @hand.setter
+    def hand(self, value):
+        self._hand = value
+
+    @property
+    def name(self):
+        return self._name
 
     def display_stacks(self, display):
         for stack in self._stacks:
             # print(type(stack.stack[0]))
             stack.display_stack(display)
-
-    def set_location(self, location):
-        self._x = location[0]
-        self._y = location[1]
-
-    @property
-    def player_name_loc(self):
-        return self._player_name_loc
-
-    def set_player_name_loc(self, location):
-        self._player_name_loc = location
-
-    def get_location(self):
-        return [self._x, self._y]
 
     def add_to_hand(self, card):
         self._hand.append(card)
@@ -95,19 +108,8 @@ class Player:
     def get_card(self, card_name):
         return self._hand[self.card_list_string().index(card_name)]
 
-    def set_hand(self, hand):
-        self._hand = hand
-
-    @property
-    def hand(self):
-        return self._hand
-
-    @property
-    def name(self):
-        return self._name
-
     def get_rect(self):
-        return pygame.Rect(self._x, self._y, 20*len(self._hand) + 64, 114)
+        return pygame.Rect(self._location[0], self._location[1], 20*len(self._hand) + 64, 114)
 
     def display_hand(self, display):
         for index, card in enumerate(self._hand):
@@ -118,8 +120,8 @@ class Player:
             card.display_card_facedown(display, card.get_position())
 
     def set_hand_positions(self):
-        x = self._x - (20 * (len(self._hand) / 2))
-        y = self._y + 30
+        x = self._location[0] - (20 * (len(self._hand) / 2))
+        y = self._location[1] + 30
         for index, card in enumerate(self._hand):
             if index == len(self._hand) - 1:
                 card.set_card_rect([x, y, 84, 114])
@@ -132,6 +134,6 @@ class Player:
     def display_player(self, display, font):
         text = font.render(self._name, False, (0, 0, 0))
         if self._player_name_loc == 'Below':
-            display.blit(text, (self._x, self._y + 150))
+            display.blit(text, (self._location[0], self._location[1] + 150))
         else:
-            display.blit(text, (self._x, self._y))
+            display.blit(text, (self._location[0], self._location[1]))

@@ -17,14 +17,22 @@ class Deck:
             self._y = location[1]
             self._rect = pygame.Rect(location[0] + 90, location[1], 84, 114)
 
-    def get_rect(self):
-        return self._rect
+    @property
+    def rect(self):
+        return self._rect  # Not sure if this used
 
-    def get_position(self):
-        return [self._x + 90, self._y]
+    @property
+    def deck(self):
+        return self._deck
 
-    def set_deck(self, deck):
-        self._deck = deck
+    # def get_position(self):
+    #     return [self._x + 90, self._y] # think this can be removed
+    @deck.setter
+    def deck(self, value):
+        self._deck = value
+
+    def top_card(self):
+        return self._deck[len(self._deck) - 1]
 
     def create(self):
         suits = ['Diamonds', 'Hearts', 'Clubs', 'Spades']
@@ -55,15 +63,9 @@ class Deck:
     def shuffle(self):
         random.shuffle(self._deck)
 
-    def get_top_card(self):
-        return self._deck[len(self._deck) - 1]
-
     def display_deck(self, display):
         if len(self._deck) > 0 and self._rect is not None: # Show nothing if deck is empty,
             display.blit(self._back_image, (self._x, self._y))
 
     def display_top_card(self, display):
-        self.get_top_card().display_card(display, [self._x + 90, self._y])
-
-    def deck(self):
-        return self._deck
+        self.top_card().display_card(display, [self._x + 90, self._y])

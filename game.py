@@ -15,7 +15,6 @@ class Game:
         self._current_card = None
         self._x_buf = 0
         self._y_buf = 0
-        self.set_player_location()
         self._player_turn_iden = player_turn_iden
         self._screen = pygame.display.set_mode([screen_size[0], screen_size[1]])
         self._reversed = False
@@ -26,6 +25,8 @@ class Game:
         self._winner = None
         self._current_stack = stacks[0]
 
+        self.set_player_location()
+
     @property
     def running(self):
         return self._running
@@ -34,11 +35,33 @@ class Game:
     def current_stack(self):
         return self._current_stack
 
-    def set_current_stack(self, current_stack):
-        self._current_stack = current_stack
+    @current_stack.setter
+    def current_stack(self, value):
+        self._current_stack = value
 
+    @property
     def winner(self):
         return self._winner
+
+    @property
+    def turn_options(self):
+        return self._turn_options
+
+    @property
+    def player_turn(self):
+        return self._player_turn
+
+    def add_card_action(self, card_name, action):
+        self._actions[card_name] = action
+
+    def add_value_action(self, card_name, action):
+        self._actions[card_name] = action
+
+    def add_suit_action(self, card_suit, action):
+        self._actions[card_suit] = action
+
+    def add_sequence_action(self, count, action):
+        self._seq_action[count] = action
 
     def handle_event(self, event):
         if event.type == pygame.QUIT:
@@ -79,13 +102,11 @@ class Game:
                 self._current_card.set_card_rect([x + self._x_buf, y + self._y_buf])
 
             if event.type == pygame.MOUSEBUTTONUP and self._current_card.is_moving:
-            # Stop dragging card
-                x = pygame.mouse.get_pos()[0]
-                y = pygame.mouse.get_pos()[1]
+                # Stop dragging card
                 for stack in self._stacks:
                     if stack.get_stack_rect().colliderect(self._current_card.get_card_rect()):
                         try:
-                            self.set_current_stack(stack)
+                            self._current_stack = stack
                             self.play_card(self._player_turn, self._current_card)
                         except InvalidCardError:
                             # Also error
@@ -93,10 +114,6 @@ class Game:
                     else:
                         self._current_card.set_position(self._current_card.get_previous_position())
                     self._current_card.set_moving(False)
-
-    @property
-    def turn_options(self):
-        return self._turn_options
 
     def remove_turn_option(self, name):
         for turn in self._turn_options:
@@ -117,14 +134,14 @@ class Game:
     def show_turn_options(self, display, font):
         font = pygame.font.SysFont('timesnewromanbold', 16)
         color = (220, 220, 220)
-        loc = self._player_turn.get_location()
+        loc = self._player_turn.location
         x = loc[0] - (20 * len(self._turn_options)) + self._player_turn.option_loc
 
         y = loc[1]
         if self._player_turn.player_name_loc != 'Below':
             y = loc[1] + 150
         for turn in self._turn_options:
-            turn.set_rect(pygame.Rect(x, y, 70, 25))
+            turn.rect = pygame.Rect(x, y, 70, 25)
             pygame.draw.rect(display, color, pygame.Rect(x, y, 70, 25))
             text = font.render(turn.name, False, (0, 0, 0))
             display.blit(text, (x + 10, y))
@@ -137,20 +154,20 @@ class Game:
         x_mid = self._screen_size[0] / 2 - 42
         y_max = self._screen_size[1] - 185
         if len(self._players) == 1:
-            self._players[0].set_location([10, 10])
+            self._players[0].location = [10, 10]
         elif len(self._players) == 2:
-            self._players[0].set_location([x_mid, 10])
-            self._players[1].set_location([x_mid, y_max])
-            self._players[1].set_player_name_loc('Below')
+            self._players[0].location = [x_mid, 10]
+            self._players[1].location = [x_mid, y_max]
+            self._players[1].player_name_loc = 'Below'
         elif len(self._players) == 3:
-            self._players[0].set_location([10, 10])
-            self._players[1].set_location([490, 370])
-            self._players[2].set_location([10, 370])
+            self._players[0].location = [10, 10]
+            self._players[1].location = [490, 370]
+            self._players[2].location = [10, 370]
         elif len(self._players) == 4:
-            self._players[0].set_location([x_start, y_start])
-            self._players[1].set_location([x_max, y_start])
-            self._players[2].set_location([x_max, y_max])
-            self._players[3].set_location([x_start, y_max])
+            self._players[0].location = [x_start, y_start]
+            self._players[1].location = [x_max, y_start]
+            self._players[2].location = [x_max, y_max]
+            self._players[3].location = [x_start, y_max]
 
     def add_to_generate(self):
         return
@@ -171,11 +188,6 @@ class Game:
                 player.display_hand(self._screen)
                 player.display_player(self._screen, self._font)
             pygame.display.flip()
-
-            # if player == self._player_turn:
-            #     player.display_hand(self._screen)
-            # else:  # Hide cards if not the players turn
-            #     player.display_hand_facedown(self._screen)
         else:
             font = pygame.font.SysFont('timesnewromanbold', 50)
             self._screen.fill((0, 128, 0))
@@ -203,24 +215,7 @@ class Game:
                 currentTurn = 0
             else:
                 currentTurn += 1
-
         self._player_turn = self._players[currentTurn]
-
-    @property
-    def player_turn(self):
-        return self._player_turn
-
-    def set_card_action(self, card_name, action):
-        self._actions[card_name] = action
-
-    def set_value_action(self, card_name, action):
-        self._actions[card_name] = action
-
-    def set_suit_action(self, card_suit, action):
-        self._actions[card_suit] = action
-
-    def set_sequence_action(self, count, action):
-        self._seq_action[count] = action
 
     def seq_action(self):
         for count in self._seq_action:
